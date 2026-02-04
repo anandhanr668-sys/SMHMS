@@ -1,4 +1,4 @@
-{
+/**{
   "compilerOptions": {
     "target": "ES2022",
     "module": "CommonJS",
@@ -13,7 +13,32 @@
 
     "resolveJsonModule": true,
     "types": ["node"]
+  },**/
+//  "include": ["src/**/*.ts"],
+//  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+//}
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+
+    "rootDir": "..",
+    "outDir": "dist",
+
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    },
+
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    "resolveJsonModule": true,
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist", "../shared/node_modules"]
 }
