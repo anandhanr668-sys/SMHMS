@@ -2,7 +2,7 @@
 
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
-
+import apiV1Routes from "./api/v1/index.js";
 /**
  * Creates and configures the Express application.
  * No server binding happens here.
@@ -14,7 +14,7 @@ export const createApp = (): Application => {
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-
+  app.use("/api/v1", apiV1Routes);
   /* -------------------- Health Check -------------------- */
   app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json({
