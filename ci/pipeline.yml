@@ -1,0 +1,33 @@
+name: HMS Platform CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+
+jobs:
+  validate:
+    name: Validate Platform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose
+        run: |
+          if [ -f docker-compose.yml ]; then
+            docker compose config
+          else
+            echo "docker-compose.yml not found – skipping"
+          fi
+
+      - name: Validate Terraform
+        run: |
+          if [ -d terraform ]; then
+            cd terraform
+            terraform init -backend=false
+            terraform validate
+          else
+            echo "Terraform directory not found – skipping"
+          fi
