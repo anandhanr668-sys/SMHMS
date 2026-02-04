@@ -1,0 +1,2406 @@
+# LOW-CODE/NO-CODE HOSPITAL MANAGEMENT SYSTEM
+## Complete Workflow & Architecture Documentation
+
+---
+
+## 🎯 PROJECT VISION
+
+**Problem Statement:**
+- Every hospital has unique workflows, departments, and protocols
+- Existing HMS software is rigid and vendor-dependent
+- Changes require weeks/months and expensive vendor intervention
+- No flexibility for hospitals to adapt software to their needs
+
+**Our Solution:**
+"WordPress for Hospital Software" - A reusable LCNC platform where hospitals can configure their entire system through an admin interface without coding.
+
+---
+
+## 🏗️ SYSTEM ARCHITECTURE OVERVIEW
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND (React.js)                      │
+│  ┌──────────┬──────────┬──────────┬──────────┬──────────┐  │
+│  │  Admin   │  Front   │  Nurse   │  Doctor  │ Patient  │  │
+│  │Dashboard │  Desk    │Dashboard │Dashboard │  Portal  │  │
+│  └──────────┴──────────┴──────────┴──────────┴──────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────┐
+│               API LAYER (Node.js + Express)                 │
+│  ┌──────────┬──────────┬──────────┬──────────┬──────────┐  │
+│  │   Auth   │  Form    │  Rules   │  Bed     │ Report   │  │
+│  │   APIs   │  APIs    │  Engine  │  APIs    │  APIs    │  │
+│  └──────────┴──────────┴──────────┴──────────┴──────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────┐
+│          DATABASE LAYER (PostgreSQL/MongoDB)                │
+│  ┌──────────┬──────────┬──────────┬──────────┬──────────┐  │
+│  │ Patients │  Forms   │  Rules   │  Beds    │ History  │  │
+│  │  Master  │  Config  │  Config  │ Master   │  Logs    │  │
+│  └──────────┴──────────┴──────────┴──────────┴──────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↕
+┌─────────────────────────────────────────────────────────────┐
+│              REAL-TIME LAYER (Socket.io)                    │
+│      Live Updates | Bed Alerts | Emergency Notifications    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 👥 USER ROLES & ACCESS CONTROL
+
+### 1. ADMIN (Full System Control)
+**Primary Responsibilities:**
+- Configure entire system using LCNC interface
+- Design forms, protocols, reports via drag-and-drop
+- Manage all master data and business rules
+- View complete system analytics
+- Access all patient records and history
+
+**Key Features:**
+- No-code Form Builder
+- Drag-drop Report Template Designer
+- Protocol & Rules Configuration
+- Staff & Resource Management
+- Audit Trail Viewer
+- System Analytics Dashboard
+
+---
+
+### 2. FRONT DESK (Patient Entry Point)
+**Primary Responsibilities:**
+- Patient registration and check-in
+- Appointment scheduling
+- Basic demographic data entry
+- Generate Patient ID
+
+**Access Restrictions:**
+- Cannot access medical data
+- Cannot modify system configurations
+- Cannot view other staff records
+
+---
+
+### 3. NURSE (Clinical Data Capture)
+**Primary Responsibilities:**
+- Capture patient vitals
+- Record initial assessment
+- Submit investigation requests
+- View bed allocation status
+- Monitor assigned patients
+
+**Access Restrictions:**
+- Cannot modify rules/protocols
+- Cannot discharge patients
+- Cannot access admin configurations
+- View only assigned patients
+
+---
+
+### 4. DOCTOR (Diagnosis & Treatment)
+**Primary Responsibilities:**
+- View patient history and vitals
+- Conduct consultation
+- Prescribe medications
+- Order investigations
+- Discharge patients
+- View past medical records
+
+**Access Restrictions:**
+- View only assigned/eligible patients
+- Cannot modify forms or rules
+- Cannot access admin panel
+- Cannot view other doctors' private notes
+
+---
+
+### 5. PATIENT (Self-Service Portal)
+**Primary Responsibilities:**
+- View own medical records
+- Download reports
+- Track appointments
+- View prescriptions
+- Access visit history
+
+**Access Restrictions:**
+- View only own data
+- Cannot modify any records
+- No access to other patients
+- Read-only access
+
+---
+
+## 🔐 AUTHENTICATION & AUTHORIZATION FLOW
+
+```
+User Login
+    ↓
+JWT Token Generation
+    ↓
+Role Detection (ADMIN/FRONT_DESK/NURSE/DOCTOR/PATIENT)
+    ↓
+Role-Based Redirection
+    ↓
+Permission-Based Feature Access
+    ↓
+Session Management (Auto-logout after inactivity)
+```
+
+**Security Features:**
+- JWT with refresh tokens
+- RBAC (Role-Based Access Control)
+- API endpoint protection
+- Audit logging for all actions
+- Password encryption (bcrypt)
+- Session timeout management
+
+---
+
+## 🎨 ADMIN MODULE - LCNC CONTROL CENTER
+
+### 1. DYNAMIC FORM BUILDER (Core LCNC Feature)
+
+**Functionality:**
+Admin can create and modify ANY form in the system using drag-and-drop interface without coding.
+
+**Form Types:**
+1. Patient Registration Form
+2. Vitals Entry Form
+3. Doctor Consultation Form
+4. Investigation Request Form
+5. Prescription Form
+6. Discharge Summary Form
+7. Custom Forms (Hospital-specific)
+
+**Form Builder Interface:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  FORM BUILDER - Create/Edit Forms                       │
+├─────────────────────────────────────────────────────────┤
+│  LEFT PANEL: Field Types        RIGHT PANEL: Canvas     │
+│  ┌────────────────┐            ┌────────────────────┐  │
+│  │ [📝] Text      │            │  Patient Vitals    │  │
+│  │ [🔢] Number    │            │                    │  │
+│  │ [📅] Date      │  Drag →    │  [Field: BP]       │  │
+│  │ [📋] Dropdown  │            │  [Field: Temp]     │  │
+│  │ [✓] Checkbox   │            │  [Field: Pulse]    │  │
+│  │ [📄] Textarea  │            │  [Add More...]     │  │
+│  │ [📷] File      │            └────────────────────┘  │
+│  │ [🎯] Section   │            Properties Panel:       │
+│  └────────────────┘            - Label                │
+│                                 - Required: Yes/No     │
+│                                 - Validation Rules     │
+│                                 - Default Value        │
+│                                 - Dependencies         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**JSON Configuration Storage:**
+```json
+{
+  "form_id": "vitals_form_v1",
+  "form_name": "Patient Vitals Entry",
+  "version": "1.0",
+  "created_by": "admin_001",
+  "created_at": "2026-01-27",
+  "fields": [
+    {
+      "field_id": "bp_systolic",
+      "type": "number",
+      "label": "Blood Pressure (Systolic)",
+      "unit": "mmHg",
+      "required": true,
+      "validation": {
+        "min": 70,
+        "max": 200
+      },
+      "order": 1
+    },
+    {
+      "field_id": "temperature",
+      "type": "number",
+      "label": "Temperature",
+      "unit": "°F",
+      "required": true,
+      "validation": {
+        "min": 95,
+        "max": 106
+      },
+      "order": 2
+    }
+  ]
+}
+```
+
+---
+
+### 2. MEDICAL RULES & PROTOCOL BUILDER
+
+**Functionality:**
+Admin configures medical decision-making rules without coding.
+
+**Rule Types:**
+1. Risk Classification Rules
+2. Auto-allocation Rules
+3. Alert Triggers
+4. Priority Escalation
+5. Workflow Automation
+
+**Rules Builder Interface:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  RULES BUILDER - Medical Protocols                      │
+├─────────────────────────────────────────────────────────┤
+│  Rule Name: High Blood Pressure Detection               │
+│                                                          │
+│  IF Conditions:                                          │
+│  ┌────────────────────────────────────────┐             │
+│  │ [BP_Systolic] [>=] [140]     [AND]     │             │
+│  │ [BP_Diastolic] [>=] [90]               │             │
+│  └────────────────────────────────────────┘             │
+│                                                          │
+│  THEN Actions:                                           │
+│  ┌────────────────────────────────────────┐             │
+│  │ ✓ Set Risk Level = HIGH_RISK           │             │
+│  │ ✓ Allocate to Emergency Ward           │             │
+│  │ ✓ Notify Doctor Immediately            │             │
+│  │ ✓ Priority = URGENT                    │             │
+│  └────────────────────────────────────────┘             │
+│                                                          │
+│  [Save Rule] [Test Rule] [Activate]                     │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Risk Classification Matrix (Admin-Configurable):**
+
+| Parameter | Normal | Warning | Critical | Action |
+|-----------|--------|---------|----------|--------|
+| BP Systolic | <140 | 140-180 | >180 | Emergency Ward |
+| Temperature | 97-99°F | 99-102°F | >102°F | Alert Doctor |
+| Pulse | 60-100 | 100-120 | >120 | ICU Allocation |
+| SPO2 | >95% | 90-95% | <90% | Oxygen Support |
+
+---
+
+### 3. REPORT TEMPLATE DESIGNER (Based on Jury Templates)
+
+**Functionality:**
+Admin creates custom report templates matching the fertility clinic format you provided.
+
+**Template Builder Interface:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  REPORT TEMPLATE DESIGNER                                │
+├─────────────────────────────────────────────────────────┤
+│  Template: Semen Analysis Report (Editable)             │
+│                                                          │
+│  [Hospital Logo] [Drag Image Here]                      │
+│                                                          │
+│  ┌─────────────────────────────────────────┐            │
+│  │ Patient Name: {{patient.name}}          │            │
+│  │ Patient ID: {{patient.id}}              │            │
+│  │ Gender: {{patient.gender}}              │            │
+│  │ Age: {{patient.age}}                    │            │
+│  └─────────────────────────────────────────┘            │
+│                                                          │
+│  [Add Section] SEMEN ANALYSIS                           │
+│  ┌─────────────────────────────────────────┐            │
+│  │ Volume: {{analysis.volume}} ml          │            │
+│  │ Concentration: {{analysis.concentration}}│           │
+│  │ Morphology: {{analysis.morphology}}     │            │
+│  └─────────────────────────────────────────┘            │
+│                                                          │
+│  [Add Table] [Add Image] [Add Signature]                │
+│  [Preview PDF] [Save Template]                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Multiple Template Support:**
+- Patient Registration Report
+- Vitals Report
+- Consultation Summary
+- Investigation Report (Lab/Radiology)
+- Prescription Report
+- Discharge Summary
+- Fertility Reports (as per your template)
+- Custom Hospital-specific Reports
+
+---
+
+### 4. MASTER DATA MANAGEMENT (LCNC)
+
+**Configurable Dropdowns:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  MASTER DATA - Dropdown Management                       │
+├─────────────────────────────────────────────────────────┤
+│  Category: Doctor Specializations                       │
+│                                                          │
+│  Current Values:                          [Add New]     │
+│  ┌────────────────────────────────────────────────┐     │
+│  │ 1. Cardiology                      [Edit] [Del] │     │
+│  │ 2. Neurology                       [Edit] [Del] │     │
+│  │ 3. Fertility Specialist            [Edit] [Del] │     │
+│  │ 4. Gynecology                      [Edit] [Del] │     │
+│  └────────────────────────────────────────────────┘     │
+│                                                          │
+│  Other Categories:                                       │
+│  - Ward Types (Emergency, ICU, General, Private)        │
+│  - Bed Types (Regular, ICU, Ventilator)                 │
+│  - Visit Types (OPD, Emergency, Follow-up)              │
+│  - Status Values (Admitted, Discharged, Referred)       │
+│  - Investigation Types (Blood, Urine, X-Ray, etc.)      │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 5. WARD & BED CONFIGURATION
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  WARD & BED MANAGEMENT                                   │
+├─────────────────────────────────────────────────────────┤
+│  Create New Ward:                                        │
+│  Ward Name: [Emergency Ward A        ]                  │
+│  Ward Type: [Emergency ▼]                               │
+│  Floor: [Ground Floor ▼]                                │
+│  Total Beds: [20]                                       │
+│                                                          │
+│  Bed Configuration:                                      │
+│  ┌────────────────────────────────────────────────┐     │
+│  │ Bed ID | Type      | Status    | Actions       │     │
+│  ├────────────────────────────────────────────────┤     │
+│  │ E-A-01 | ICU       | Available | [Edit] [Del]  │     │
+│  │ E-A-02 | Ventilator| Occupied  | [View Patient]│     │
+│  │ E-A-03 | Regular   | Available | [Edit] [Del]  │     │
+│  └────────────────────────────────────────────────┘     │
+│                                                          │
+│  [Add Bed] [Bulk Import] [Export]                       │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 6. STAFF MANAGEMENT (LCNC)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  STAFF MANAGEMENT - Create/Modify Staff                 │
+├─────────────────────────────────────────────────────────┤
+│  Add New Staff Member:                                   │
+│                                                          │
+│  Name: [Dr. Rajesh Kumar          ]                     │
+│  Role: [Doctor ▼]                                       │
+│  Specialization: [Cardiology ▼]                         │
+│  Department: [Emergency ▼]                              │
+│  Shift: [Morning ▼]                                     │
+│  Contact: [9876543210]                                  │
+│  Email: [rajesh@hospital.com]                           │
+│                                                          │
+│  Permissions:                                            │
+│  ☑ View Patient Records                                 │
+│  ☑ Prescribe Medications                                │
+│  ☑ Order Investigations                                 │
+│  ☑ Discharge Patients                                   │
+│  ☐ Access Admin Panel                                   │
+│                                                          │
+│  [Save] [Cancel]                                        │
+│                                                          │
+│  Current Staff List:                                     │
+│  ┌────────────────────────────────────────────────┐     │
+│  │ Name          | Role    | Dept | Status        │     │
+│  ├────────────────────────────────────────────────┤     │
+│  │ Dr. Sharma    | Doctor  | ICU  | [Edit] [Del]  │     │
+│  │ Nurse Priya   | Nurse   | Ward | [Edit] [Del]  │     │
+│  └────────────────────────────────────────────────┘     │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 7. AUDIT & VERSION CONTROL
+
+**Admin Activity Tracking:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  AUDIT LOG - All Admin Changes                          │
+├─────────────────────────────────────────────────────────┤
+│  Date/Time           | Action         | Changed By      │
+│  ─────────────────────────────────────────────────────  │
+│  2026-01-27 10:30 AM | Form Modified  | admin_user     │
+│  2026-01-27 09:15 AM | Rule Updated   | admin_user     │
+│  2026-01-26 05:00 PM | Ward Added     | admin_user     │
+│                                                          │
+│  [View Details] [Rollback] [Export Log]                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Version History:**
+- All form versions saved
+- Rollback capability to previous configurations
+- Compare versions side-by-side
+- Audit trail for compliance
+
+---
+
+## 📋 COMPLETE PATIENT JOURNEY WORKFLOW
+
+### STEP 1: Patient Arrival (FRONT DESK)
+
+```
+Patient Arrives
+    ↓
+Front Desk Login → Dashboard
+    ↓
+Click "Register New Patient"
+    ↓
+Dynamic Form Loads (Admin-configured)
+    ↓
+Fill Patient Details:
+  - Name, Age, Gender
+  - Contact, Address
+  - Emergency Contact
+  - Insurance Details
+  - Medical History
+    ↓
+Submit Form
+    ↓
+System Generates Permanent Patient ID: HMS2026001
+    ↓
+Patient Record Created in Database
+    ↓
+Patient ID Displayed + Print Registration Slip
+```
+
+**Key Features:**
+- Permanent Patient ID (never changes)
+- All future visits linked to same ID
+- QR code generation for quick check-in
+- SMS/Email confirmation to patient
+
+---
+
+### STEP 2: Vitals Capture (NURSE)
+
+```
+Nurse Login → Dashboard
+    ↓
+Search Patient by ID or Name
+    ↓
+Select Patient: HMS2026001
+    ↓
+View Patient History (if exists)
+    ↓
+Click "Capture Vitals"
+    ↓
+Dynamic Vitals Form Loads (Admin-configured)
+    ↓
+Enter Data:
+  - Blood Pressure: 160/95 mmHg
+  - Temperature: 101.5°F
+  - Pulse: 110 bpm
+  - SPO2: 94%
+  - Height, Weight, BMI
+    ↓
+Submit Vitals
+    ↓
+AUTOMATED SYSTEM DECISION ENGINE TRIGGERS
+```
+
+---
+
+### STEP 3: Automated Risk Assessment (SYSTEM)
+
+```
+System Fetches Admin-Defined Rules
+    ↓
+Compare Patient Vitals with Rules
+    ↓
+Rules Engine Evaluates:
+  - BP >= 140/90: TRUE → Risk Factor +1
+  - Temp > 100°F: TRUE → Risk Factor +1
+  - SPO2 < 95%: TRUE → Risk Factor +1
+    ↓
+Total Risk Score: 3
+    ↓
+Risk Classification: HIGH_RISK
+    ↓
+Auto-Trigger Actions:
+  1. Allocate Emergency Ward Bed
+  2. Notify Available Doctors
+  3. Priority: URGENT
+  4. Generate Alert
+```
+
+**Decision Engine Logic (Admin-Configurable):**
+
+```javascript
+// Stored as JSON in Database
+{
+  "rule_id": "high_risk_detection",
+  "conditions": [
+    {"field": "bp_systolic", "operator": ">=", "value": 140},
+    {"field": "temperature", "operator": ">", "value": 100},
+    {"field": "spo2", "operator": "<", "value": 95}
+  ],
+  "logic": "OR", // Any condition triggers
+  "actions": [
+    {"type": "set_risk", "value": "HIGH_RISK"},
+    {"type": "allocate_ward", "value": "EMERGENCY"},
+    {"type": "notify_role", "value": "DOCTOR"},
+    {"type": "set_priority", "value": "URGENT"}
+  ]
+}
+```
+
+---
+
+### STEP 4: Bed Allocation (AUTOMATED)
+
+```
+System Checks Bed Availability
+    ↓
+Query: SELECT * FROM beds 
+       WHERE ward_type='EMERGENCY' 
+       AND status='AVAILABLE'
+    ↓
+Found: Bed E-A-05 in Emergency Ward A
+    ↓
+Allocate Bed:
+  - Update bed status: OCCUPIED
+  - Link patient_id: HMS2026001
+  - Set allocation_time: 2026-01-27 11:00 AM
+  - Lock bed (prevent duplicate allocation)
+    ↓
+Send Real-time Notifications:
+  - Nurse: "Patient HMS2026001 assigned to E-A-05"
+  - Doctor: "New HIGH_RISK patient in E-A-05"
+  - Admin: Dashboard updated
+```
+
+**Bed Unavailable Scenario:**
+```
+If No Bed Available:
+  - Generate Alert to Admin
+  - Show waitlist position
+  - Suggest alternative wards
+  - Allow manual override (Admin only)
+```
+
+---
+
+### STEP 5: Doctor Consultation (DOCTOR)
+
+```
+Doctor Login → Dashboard
+    ↓
+View "Assigned Patients" List
+    ↓
+See: HMS2026001 - HIGH_RISK - Bed E-A-05
+    ↓
+Click Patient Name
+    ↓
+Patient 360° View Opens:
+  ┌────────────────────────────────────────┐
+  │ Patient: Mr. Test Tamil                │
+  │ ID: HMS2026001                         │
+  │ Age: 45 | Gender: Male                 │
+  │ Risk: HIGH_RISK                        │
+  │ Bed: E-A-05 (Emergency Ward A)         │
+  ├────────────────────────────────────────┤
+  │ TABS:                                  │
+  │ [Current Visit] [History] [Reports]    │
+  ├────────────────────────────────────────┤
+  │ Current Vitals (Latest):               │
+  │ BP: 160/95 | Temp: 101.5°F            │
+  │ Pulse: 110 | SPO2: 94%                │
+  │                                        │
+  │ Previous Visits:                       │
+  │ - 2025-12-10: Hypertension checkup    │
+  │ - 2025-10-05: Annual health screening │
+  │                                        │
+  │ Past Medications:                      │
+  │ - Amlodipine 5mg                      │
+  │ - Aspirin 75mg                        │
+  │                                        │
+  │ Investigation History:                 │
+  │ - ECG (2025-12-10): Normal            │
+  │ - Blood Test (2025-10-05): Attached   │
+  └────────────────────────────────────────┘
+    ↓
+Doctor Clicks "Start Consultation"
+    ↓
+Dynamic Consultation Form Loads
+    ↓
+Fill Details:
+  - Chief Complaints: Chest pain, shortness of breath
+  - Diagnosis: Acute Hypertensive Crisis
+  - Prescription:
+    * Amlodipine 10mg - 1-0-1 - 30 days
+    * Metoprolol 50mg - 1-0-1 - 30 days
+  - Investigations:
+    * ECG - Urgent
+    * Troponin Test - Urgent
+    * Chest X-Ray
+  - Advice: Rest, low-salt diet, follow-up in 3 days
+  - Next Visit: 2026-01-30
+    ↓
+Submit Consultation
+    ↓
+System Actions:
+  - Save consultation record
+  - Link to patient history (HMS2026001)
+  - Update patient status: UNDER_TREATMENT
+  - Generate prescription PDF
+  - Send investigation requests to lab
+  - Store complete data for future reference
+```
+
+**Historical Data Preservation:**
+Every consultation, prescription, and report is permanently linked to the patient ID and accessible for all future visits.
+
+---
+
+### STEP 6: Investigation & Reports
+
+```
+Lab Receives Investigation Request
+    ↓
+Lab Technician Performs Tests
+    ↓
+Enter Results in System
+    ↓
+System Uses Admin-Defined Report Template
+    ↓
+Generate PDF Report (Auto-formatted)
+    ↓
+Report Format Matches Jury Template:
+  ┌────────────────────────────────────────┐
+  │ [Hospital Logo]                        │
+  │ INVESTIGATION REPORT                   │
+  │                                        │
+  │ Patient: Mr. Test Tamil                │
+  │ ID: HMS2026001                         │
+  │ Date: 27-01-2026                       │
+  │                                        │
+  │ TEST: ECG                              │
+  │ Result: Sinus Tachycardia              │
+  │ Interpretation: Mild abnormality       │
+  │                                        │
+  │ Authorized By: Dr. Sharma              │
+  │ Lab Ref: LAB20260127001                │
+  └────────────────────────────────────────┘
+    ↓
+Report Saved to Patient Record
+    ↓
+Doctor Notified (Real-time)
+    ↓
+Patient Can View in Portal
+```
+
+---
+
+### STEP 7: Discharge Process
+
+```
+Doctor Decides to Discharge Patient
+    ↓
+Click "Discharge Patient"
+    ↓
+Discharge Summary Form (Admin-configured) Loads
+    ↓
+Fill Summary:
+  - Final Diagnosis
+  - Treatment Given
+  - Medications to Continue
+  - Follow-up Instructions
+  - Next Appointment
+    ↓
+Submit Discharge
+    ↓
+System Actions:
+  - Release Bed E-A-05
+  - Update bed status: AVAILABLE
+  - Update patient status: DISCHARGED
+  - Generate Discharge Summary PDF
+  - Send to Patient via Email/SMS
+  - Maintain complete visit record
+    ↓
+Bed Available for Next Patient (Real-time Update)
+```
+
+---
+
+### STEP 8: Patient Portal Access
+
+```
+Patient Login (HMS2026001)
+    ↓
+Patient Dashboard:
+  ┌────────────────────────────────────────┐
+  │ Welcome, Mr. Test Tamil                │
+  │                                        │
+  │ Visit History:                         │
+  │ ┌──────────────────────────────────┐   │
+  │ │ 27-Jan-2026 - Hypertension       │   │
+  │ │ Status: Discharged               │   │
+  │ │ Doctor: Dr. Rajesh Kumar         │   │
+  │ │ [View Details] [Download Report] │   │
+  │ └──────────────────────────────────┘   │
+  │ ┌──────────────────────────────────┐   │
+  │ │ 10-Dec-2025 - Check-up           │   │
+  │ │ [View Details]                   │   │
+  │ └──────────────────────────────────┘   │
+  │                                        │
+  │ Current Medications:                   │
+  │ - Amlodipine 10mg (30 days left)      │
+  │ - Metoprolol 50mg (30 days left)      │
+  │                                        │
+  │ Upcoming Appointments:                 │
+  │ - 30-Jan-2026 with Dr. Rajesh Kumar   │
+  │                                        │
+  │ Reports:                               │
+  │ - ECG Report (27-Jan-2026) [Download] │
+  │ - Blood Test (10-Dec-2025) [Download] │
+  └────────────────────────────────────────┘
+```
+
+---
+
+## 🔄 REAL-TIME UPDATES (Socket.io)
+
+**Live Events:**
+
+1. **Bed Status Changes**
+   - When bed allocated → All dashboards update instantly
+   - When bed released → Available immediately for allocation
+
+2. **Emergency Alerts**
+   - HIGH_RISK patient detection → Notify all doctors
+   - Critical vitals → Alert assigned doctor + admin
+
+3. **Patient Status Updates**
+   - Consultation completed → Notify nurse for next steps
+   - Discharge → Update bed availability
+
+4. **Investigation Results**
+   - Lab report ready → Notify doctor immediately
+   - Critical findings → Priority alert
+
+**Implementation:**
+```javascript
+// Server broadcasts
+socket.emit('bed_allocated', {
+  patient_id: 'HMS2026001',
+  bed_id: 'E-A-05',
+  ward: 'Emergency A'
+});
+
+// Clients listen
+socket.on('bed_allocated', (data) => {
+  updateDashboard(data);
+  showNotification(`Bed ${data.bed_id} allocated`);
+});
+```
+
+---
+
+## 📊 HISTORICAL DATA & PERMANENT RECORDS
+
+### Data Retention Strategy
+
+**1. Patient Master Record (Permanent)**
+```json
+{
+  "patient_id": "HMS2026001",
+  "created_date": "2026-01-27",
+  "name": "Mr. Test Tamil",
+  "dob": "1980-05-15",
+  "gender": "Male",
+  "contact": "9876543210",
+  "address": "Pune, Maharashtra",
+  "emergency_contact": "+91-9876543211",
+  "blood_group": "O+",
+  "allergies": ["Penicillin"],
+  "chronic_conditions": ["Hypertension"],
+  "insurance": "HDFC Ergo - POL123456"
+}
+```
+
+**2. Visit History (Linked to Patient ID)**
+```json
+{
+  "visit_id": "V20260127001",
+  "patient_id": "HMS2026001",
+  "visit_date": "2026-01-27",
+  "visit_type": "Emergency",
+  "vitals": {
+    "bp": "160/95",
+    "temperature": "101.5",
+    "pulse": "110",
+    "spo2": "94"
+  },
+  "risk_classification": "HIGH_RISK",
+  "bed_allocated": "E-A-05",
+  "doctor_assigned": "Dr. Rajesh Kumar",
+  "diagnosis": "Acute Hypertensive Crisis",
+  "prescriptions": [...],
+  "investigations": [...],
+  "discharge_date": "2026-01-27",
+  "discharge_summary": {...}
+}
+```
+
+**3. Complete Audit Trail**
+Every action is logged:
+- Who accessed the record
+- What changes were made
+- When the action occurred
+- Original and updated values
+
+**4. Document Storage**
+- All reports stored permanently
+- Linked to patient ID and visit ID
+- Accessible across all future visits
+- Download anytime from patient portal
+
+---
+
+## 🎯 KEY LCNC FEATURES THAT WIN THE HACKATHON
+
+### 1. **Zero Vendor Dependency**
+- Hospital staff can modify everything through UI
+- No need to call developers for changes
+- Instant updates without redeployment
+
+### 2. **Drag-and-Drop Form Builder**
+- Non-technical admins can create complex forms
+- Add/remove fields in minutes
+- Validation rules configurable via UI
+
+### 3. **Visual Rules Engine**
+- Configure medical protocols without coding
+- IF-THEN logic through UI
+- Test rules before activation
+
+### 4. **Template Designer for Reports**
+- Match any hospital's branding
+- Support for multiple templates (like fertility reports shown)
+- Dynamic field mapping
+
+### 5. **Multi-Hospital Reusability**
+- Same codebase for different hospitals
+- Each hospital has own configuration
+- Database per hospital (isolated data)
+
+### 6. **Complete Historical Tracking**
+- Permanent patient IDs
+- All visits linked forever
+- Nothing ever deleted
+- Complete audit trail
+
+### 7. **Real-Time Collaboration**
+- Live updates across all users
+- No page refresh needed
+- Instant notifications
+
+### 8. **Mobile-Responsive**
+- Works on tablets for bedside use
+- Doctors can access on phones
+- Patients use mobile portal
+
+---
+
+## 🏆 WHY THIS WINS THE HACKATHON
+
+### 1. **Solves Real Problem**
+- Addresses actual hospital pain points
+- Industry-ready solution
+- Scalable architecture
+
+### 2. **Impressive Tech Stack**
+- Modern technologies (React, Node, Socket.io)
+- Clean architecture
+- Production-grade code
+
+### 3. **True LCNC Implementation**
+- Not just talking about it - actually implemented
+- Visual builders work without coding
+- Instant configuration changes
+
+### 4. **Complete Feature Set**
+- All workflows covered
+- Nothing left to imagination
+- Production-ready
+
+### 5. **Jury Template Integration**
+- Reports match provided templates
+- Shows attention to requirements
+- Customizable for any format
+
+### 6. **Demo-Friendly**
+- Easy to demonstrate live
+- Visual impact (drag-drop builders)
+- Real-time updates impress
+
+### 7. **Scalability & Future-Proof**
+- Multi-hospital support
+- Cloud-ready
+- API-first design
+
+---
+
+## 📱 USER INTERFACE MOCKUPS
+
+### Admin LCNC Dashboard
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ [Logo] Hospital Management System    [Admin] [Logout]   │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  LCNC CONTROL CENTER                                    │
+│                                                          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
+│  │  FORM    │ │  RULES   │ │ REPORTS  │ │  MASTER  │  │
+│  │ BUILDER  │ │ BUILDER  │ │ DESIGNER │ │   DATA   │  │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
+│                                                          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
+│  │  WARD    │ │  STAFF   │ │  AUDIT   │ │ ANALYTICS│  │
+│  │  MGMT    │ │  MGMT    │ │   LOG    │ │          │  │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
+│                                                          │
+│  Recent Activity:                                        │
+│  • Form updated: Vitals Entry (2 hours ago)             │
+│  • New rule added: Critical BP Alert (Yesterday)        │
+│  • Ward configured: ICU Block B (2 days ago)            │
+│                                                          │
+│  System Health:                                          │
+│  ● Database: Healthy  ● API: Running  ● Socket: Active  │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+This workflow ensures:
+✅ Complete LCNC functionality
+✅ Permanent patient records
+✅ Historical data preservation
+✅ Multi-template support
+✅ Real-time updates
+✅ Role-based access
+✅ Zero vendor dependency
+✅ Production-ready architecture
+	
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+															project Document
+
+Frontend
+│
+├── Login / Auth Screens
+│
+├── Admin Dashboard
+│   ├── Form Builder
+│   ├── Rules Builder
+│   ├── Report Designer
+│   ├── Master Data
+│   ├── Ward & Bed Management
+│   ├── Staff Management
+│   ├── Audit Logs
+│   └── Analytics
+│
+├── Front Desk Dashboard
+│   ├── Patient Registration
+│   ├── Appointment Scheduling
+│
+├── Nurse Dashboard
+│   ├── Assigned Patients
+│   ├── Vitals Capture
+│   └── Bed Status
+│
+├── Doctor Dashboard
+│   ├── Patient List
+│   ├── Consultation
+│   ├── Prescriptions
+│   └── Discharge
+│
+└── Patient Portal
+    ├── Visit History
+    ├── Reports
+    ├── Prescriptions
+    └── Appointments
+	
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+																Form Engine
+
+Form Engine
+│
+├── Form Loader (fetch JSON)
+├── Field Renderer
+│   ├── Text
+│   ├── Number
+│   ├── Dropdown
+│   ├── Checkbox
+│   ├── File Upload
+│
+├── Validation Engine
+├── Dependency Handler
+└── Submit Handler
+
+	
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+																Rules Engine						
+
+Rules Engine
+│
+├── Rule Loader
+├── Condition Evaluator
+│   ├── >=, <=, ==, !=
+│   ├── AND / OR
+│
+├── Risk Scoring
+├── Action Executor
+│   ├── Set Risk
+│   ├── Allocate Bed
+│   ├── Send Notification
+│   └── Escalate Priority
+└── Rule Tester
+
+	
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+																Report Engine
+Report Engine
+│
+├── Template Loader
+├── Variable Mapper
+├── Table Generator
+├── Signature Handler
+├── Branding Injector
+└── PDF Generator
+
+	
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+																Backend (API Layer)
+Backend (API Layer)
+│
+├── Auth Service
+│   ├── Login
+│   ├── JWT
+│   └── RBAC
+│
+├── Patient Service
+│   ├── Patient Master
+│   ├── Visit History
+│
+├── Form Service
+│   ├── Save Form JSON
+│   ├── Fetch Form JSON
+│
+├── Rules Service
+│   ├── Store Rules
+│   ├── Execute Rules
+│
+├── Bed Management Service
+│   ├── Availability
+│   ├── Allocation
+│   └── Locking
+│
+├── Report Service
+│   ├── Template Management
+│   └── PDF Generation
+│
+├── Notification Service
+│   ├── Socket Events
+│   ├── SMS / Email
+│
+└── Audit Service
+    ├── Log Changes
+    └── Version History
+	
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+															Configuration Tables (LCNC Power)
+Forms_Config
+Rules_Config
+Report_Templates
+Master_Data
+Ward_Config
+Bed_Config
+Role_Permissions
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+															Operational Data Tables
+Patients_Master
+Visits
+Vitals
+Consultations
+Prescriptions
+Investigations
+Beds_Allocation
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+															System Tables
+Users
+Roles
+Audit_Logs
+Version_History
+Notifications
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+															REAL-TIME & AUDIT LAYER
+Events
+│
+├── bed_allocated
+├── bed_released
+├── high_risk_detected
+├── report_ready
+├── patient_discharged
+															
+															
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+															Audit & Version Control
+Audit System
+│
+├── Who changed?
+├── What changed?
+├── When?
+├── Old Value
+├── New Value
+└── Rollback Support
+
+	
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+														MULTI-HOSPITAL STRUCTURE (SCALABILITY)
+Platform
+│
+├── Hospital A
+│   ├── Config
+│   └── Data
+│
+├── Hospital B
+│   ├── Config
+│   └── Data
+│
+└── Hospital C
+    ├── Config
+    └── Data
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+															HOW EVERYTHING FLOWS (ONE LINE SUMMARY)
+Admin configures system
+        ↓
+Configs stored as JSON
+        ↓
+UI renders dynamically
+        ↓
+Users enter data
+        ↓
+Rules engine evaluates
+        ↓
+Beds / alerts / workflows trigger
+        ↓
+Reports generated
+        ↓
+Data stored permanently
+
+
+
+
+===================================================================================================================================================================
+                                                                            Newly integrated project STRUCTURE
+ 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+															    VS CODING INSIDE OF IN FRONTEND -- optional== loader.css 
+hms-frontend/
+├── public/
+│   ├── index.html
+│   ├── favicon.ico
+│   └── images/
+│       └── hospital-bg.jpg
+│
+├── src/
+│
+│   ├── assets/
+│   │   ├── icons/
+│   │   └── images/
+│
+│   ├── core/                              ⭐ FRAMEWORK CORE (SYSTEM LEVEL)
+│   │   ├── AppShell.jsx                   # Header + Sidebar + Footer layout
+│   │   ├── ErrorBoundary.jsx
+│   │   ├── ThemeProvider.jsx
+│   │   ├── PermissionGate.jsx
+│   │   ├── ProtectedRoute.jsx
+│   │   └── TenantResolver.jsx             # Multi-hospital switch
+│
+│   ├── components/
+│   │   └── common/                        # SHARED UI COMPONENTS
+│   │       ├── Header.jsx
+│   │       ├── Sidebar.jsx
+│   │       ├── Footer.jsx
+│   │       ├── Modal.jsx
+│   │       ├── Loader.jsx
+│   │       └── Toast.jsx
+│
+│   ├── lcnc/                              ⭐ LOW-CODE / NO-CODE ENGINES
+│   │
+│   │   ├── form-engine/
+│   │   │   ├── builder/                   # Admin Form Builder
+│   │   │   │   ├── FormBuilder.jsx
+│   │   │   │   ├── FieldPalette.jsx
+│   │   │   │   ├── FieldProperties.jsx
+│   │   │   │   ├── DragCanvas.jsx
+│   │   │   │   └── FieldPreview.jsx
+│   │   │   ├── runtime/                   # Runtime Form Rendering
+│   │   │   │   ├── FormRenderer.jsx
+│   │   │   │   ├── DynamicField.jsx
+│   │   │   │   └── ValidationRunner.js
+│   │   │   └── fields/
+│   │   │       ├── TextField.jsx
+│   │   │       ├── NumberField.jsx
+│   │   │       ├── DateField.jsx
+│   │   │       ├── DropdownField.jsx
+│   │   │       ├── CheckboxField.jsx
+│   │   │       ├── FileUpload.jsx
+│   │   │       └── CompositeField.jsx
+│   │
+│   │   ├── rules-engine/
+│   │   │   ├── RulesBuilder.jsx
+│   │   │   ├── RuleCanvas.jsx
+│   │   │   ├── ConditionEditor.jsx
+│   │   │   ├── ActionEditor.jsx
+│   │   │   ├── RulePreview.jsx
+│   │   │   ├── RuleSimulator.jsx          ⭐ DEMO GOLD
+│   │   │   └── RuleExecutor.js
+│   │
+│   │   ├── report-engine/
+│   │   │   ├── ReportDesigner.jsx
+│   │   │   ├── ReportCanvas.jsx
+│   │   │   ├── LayoutCanvas.jsx
+│   │   │   ├── PlaceholderPicker.jsx
+│   │   │   ├── DataSourceBinder.jsx
+│   │   │   └── ReportRenderer.jsx
+│   │
+│   │   └── workflow-engine/               ⭐ BONUS (VERY IMPRESSIVE)
+│   │       ├── WorkflowDesigner.jsx
+│   │       ├── StateMachine.jsx
+│   │       └── WorkflowPreview.jsx
+│
+│   ├── dashboards/                        ⭐ ROLE-BASED SCREENS (THIN UI)
+│   │
+│   │   ├── admin/
+│   │   │   ├── AdminDashboard.jsx
+│   │   │   ├── FormBuilderPage.jsx
+│   │   │   ├── RulesBuilderPage.jsx
+│   │   │   ├── ReportDesignerPage.jsx
+│   │   │   ├── MasterData.jsx
+│   │   │   ├── WardBedManagement.jsx
+│   │   │   ├── StaffManagement.jsx
+│   │   │   ├── AuditLogs.jsx
+│   │   │   └── Analytics.jsx
+|   |   |   |_ PatientsPage.jsx
+│   │
+│   │   ├── frontdesk/
+│   │   │   ├── FrontDeskDashboard.jsx
+│   │   │   ├── PatientRegistration.jsx
+│   │   │   └── AppointmentScheduling.jsx
+│   │
+│   │   ├── nurse/
+│   │   │   ├── NurseDashboard.jsx
+│   │   │   ├── AssignedPatients.jsx
+│   │   │   ├── VitalsCapture.jsx
+│   │   │   └── BedStatus.jsx
+│   │
+│   │   ├── doctor/
+│   │   │   ├── DoctorDashboard.jsx
+│   │   │   ├── PatientList.jsx
+│   │   │   ├── Consultation.jsx
+│   │   │   ├── Prescriptions.jsx
+│   │   │   └── Discharge.jsx
+│   │
+│   │   └── patient/
+│   │       ├── PatientPortal.jsx
+│   │       ├── VisitHistory.jsx
+│   │       ├── Reports.jsx
+│   │       ├── Prescriptions.jsx
+│   │       └── Appointments.jsx
+│
+│   ├── realtime/
+│   │   ├── socketClient.js
+│   │   ├── bedLiveUpdates.js
+│   │   └── notificationStream.js
+│
+│   ├── pages/                            ⭐ ENTRY / AUTH PAGES
+│   │   ├── Login.jsx
+│   │   ├── Unauthorized.jsx
+│   │   └── NotFound.jsx
+│
+│   ├── routes/
+│   │   └── AppRoutes.jsx
+│
+│   ├── services/                         ⭐ API COMMUNICATION
+│   │   ├── apiClient.js
+│   │   ├── authService.js
+│   │   ├── tenantService.js
+│   │   ├── formService.js
+│   │   ├── ruleService.js
+│   │   ├── reportService.js
+│   │   ├── patientService.js
+│   │   ├── auditService.js
+│   │   └── analyticsService.js
+│
+│   ├── store/                            ⭐ GLOBAL STATE (ZUSTAND / REDUX)
+│   │   ├── authStore.js
+│   │   ├── tenantStore.js
+│   │   ├── formStore.js
+│   │   ├── ruleStore.js
+│   │   ├── patientStore.js
+│   │   ├── realtimeStore.js
+│   │   └── uiStore.js
+│
+│   ├── styles/
+│   │   ├── global.css
+│   │   ├── loader.css                    # OPTIONAL
+│   │   ├── login.css
+│   │   ├── dashboard.css
+│   │   ├── formBuilder.css
+│   │   ├── rulesBuilder.css
+│   │   └── reportDesigner.css
+│
+│   ├── utils/
+│   │   ├── constants.js
+│   │   ├── roleMapper.js
+│   │   ├── permissionCheck.js
+│   │   ├── validators.js
+│   │   ├── ruleEvaluator.js
+│   │   ├── schemaValidator.js
+│   │   └── helpers.js
+│
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+│
+├── package.json
+├── vite.config.js
+└── README.md give me the output image of this project with all  interfaces                                                                                                          
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+															                VS CODING INSIDE OF IN BACKEND 
+hms-backend/
+├── src/
+│
+│   ├── app.js                          # Express app bootstrap
+│   ├── server.js                       # Server entry point
+│
+│   ├── config/                         # CONFIGURATION
+│   │   ├── db.js                       # Database connection
+│   │   ├── env.js                      # Environment variables
+│   │   ├── logger.js                   # Winston / Pino logger
+│   │   └── tenant.config.js            # Multi-hospital config
+│
+│   ├── core/                           ⭐ PLATFORM CORE (SYSTEM LEVEL)
+│   │
+│   │   ├── tenant/                     # MULTI-TENANCY
+│   │   │   ├── tenant.model.js
+│   │   │   ├── tenant.resolver.js
+│   │   │   └── tenant.middleware.js
+│   │
+│   │   ├── rbac/                       # ROLE BASED ACCESS
+│   │   │   ├── role.model.js
+│   │   │   ├── permission.model.js
+│   │   │   ├── access.guard.js
+│   │   │   └── role.middleware.js
+│   │
+│   │   └── versioning/                 # API VERSION CONTROL
+│   │       ├── version.model.js
+│   │       └── version.service.js
+│
+│   ├── modules/                        ⭐ BUSINESS DOMAINS
+│
+│   │   ├── auth/                       # AUTHENTICATION
+│   │   │   ├── auth.controller.js
+│   │   │   ├── auth.service.js
+│   │   │   ├── auth.routes.js
+│   │   │   └── auth.middleware.js
+│
+│   │   ├── users/                      # STAFF + PATIENT USERS
+│   │   │   ├── user.model.js
+│   │   │   ├── user.service.js
+│   │   │   ├── user.controller.js
+│   │   │   └── user.routes.js
+│
+│   │   ├── patients/                   # PATIENT MASTER
+│   │   │   ├── patient.model.js
+│   │   │   ├── patient.service.js
+│   │   │   ├── patient.controller.js
+│   │   │   └── patient.routes.js
+│
+│   │   ├── visits/                     # VISITS + CLINICAL FLOW
+│   │   │   ├── visit.model.js
+│   │   │   ├── visit.service.js
+│   │   │   ├── visit.controller.js
+│   │   │   └── visit.routes.js
+│
+│   │   ├── wards-beds/                 # BED & WARD MANAGEMENT
+│   │   │   ├── ward.model.js
+│   │   │   ├── ward.service.js
+│   │   │   ├── ward.controller.js
+│   │   │   └── ward.routes.js
+│
+│   │   ├── staff/                      # DOCTORS / NURSES
+│   │   │   ├── staff.model.js
+│   │   │   ├── staff.service.js
+│   │   │   ├── staff.controller.js
+│   │   │   └── staff.routes.js
+│
+│   │   ├── insurance/                  # INSURANCE TRACKING
+│   │   │   ├── insurance.model.js
+│   │   │   ├── insurance.service.js
+│   │   │   ├── insurance.controller.js
+│   │   │   └── insurance.routes.js
+│
+│   │   ├── billing/                    # BILLING & PAYMENTS
+│   │   │   ├── billing.model.js
+│   │   │   ├── billing.service.js
+│   │   │   ├── billing.controller.js
+│   │   │   └── billing.routes.js
+│
+│   │   ├── pharmacy/                   # PHARMACY MODULE
+│   │   │   ├── pharmacy.model.js
+│   │   │   ├── pharmacy.service.js
+│   │   │   ├── pharmacy.controller.js
+│   │   │   └── pharmacy.routes.js
+│
+│   │   ├── master-data/                # DROPDOWNS & CONFIG
+│   │   │   ├── master.model.js
+│   │   │   ├── master.service.js
+│   │   │   ├── master.controller.js
+│   │   │   └── master.routes.js
+│
+│   ├── lcnc/                           ⭐ LOW-CODE / NO-CODE BACKEND
+│
+│   │   ├── form-engine/
+│   │   │   ├── form.model.js
+│   │   │   ├── form.service.js
+│   │   │   ├── form.controller.js
+│   │   │   ├── form.validator.js
+│   │   │   └── form.routes.js
+│
+│   │   ├── rules-engine/
+│   │   │   ├── rule.model.js
+│   │   │   ├── rule.executor.js
+│   │   │   ├── rule.simulator.js
+│   │   │   └── rule.routes.js
+│
+│   │   ├── report-engine/
+│   │   │   ├── report.model.js
+│   │   │   ├── report.generator.js
+│   │   │   └── report.routes.js
+│
+│   │   └── workflow-engine/
+│   │       ├── workflow.model.js
+│   │       ├── workflow.executor.js
+│   │       └── workflow.routes.js
+│
+│   ├── realtime/                       ⭐ REAL-TIME SYSTEM
+│   │   ├── socket.js
+│   │   ├── bed.events.js
+│   │   └── notification.events.js
+│
+│   ├── audit/                          ⭐ AUDIT & LOGGING
+│   │   ├── audit.model.js
+│   │   ├── audit.logger.js
+│   │   └── audit.routes.js
+│
+│   ├── analytics/                      ⭐ DASHBOARD METRICS
+│   │   ├── analytics.service.js
+│   │   ├── analytics.controller.js
+│   │   └── analytics.routes.js
+│
+│   ├── middlewares/                    # GLOBAL MIDDLEWARES
+│   │   ├── auth.middleware.js
+│   │   ├── tenant.middleware.js
+│   │   ├── error.middleware.js
+│   │   └── requestLogger.middleware.js
+│
+│   ├── utils/                          # SHARED HELPERS
+│   │   ├── jwt.js
+│   │   ├── response.js
+│   │   ├── ruleParser.js
+│   │   ├── validators.js
+│   │   └── constants.js
+│
+│   ├── routes.js                       # CENTRAL ROUTE REGISTRY
+│   └── socket.index.js                 # SOCKET ENTRY
+│
+├── migrations/                         # DATABASE MIGRATIONS
+├── seeders/                            # SAMPLE DATA
+├── tests/                              # API TESTS
+├── docker-compose.yml
+├── .env
+├── package.json
+└── README.md
+===================================================================================================================================================================
+
+
+"{
+  "email": "doctor@hms.com",
+  "password": "password123"
+}"
+
+
+===================================================================================================================================================================
+                                                                    New Structured project
+
+
+hms-platform/
+├── .gitignore
+├── .env.example
+├── README.md
+├── LICENSE
+├── docker-compose.yml
+├── .prettierrc
+├── .eslintrc.js
+├── security.md
+├── architecture.md
+├── runbook.md
+├── terraform/                             # optional infra-as-code (if used)
+│   ├── main.tf
+│   └── variables.tf
+│
+├── ci/                                    # CI/CD pipelines
+│   ├── pipeline.yml
+│   └── deploy.sh
+│
+├── docs/
+│   ├── api_contracts.md
+│   ├── data_model.md
+│   ├── rbac.md
+│   ├── sockets.md
+│   ├── lcnc_spec.md
+│   ├── pdf_template_guidelines.md
+│   └── demo_script.md
+│
+├── hms-backend/
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── knexfile.js
+│   ├── dockerfile
+│   ├── .env.example
+│   ├── README.md
+│   ├── src/
+│   │   ├── server.js                      # HTTP + Socket.IO bootstrap (ONLY listen here)
+│   │   ├── app.js                         # Express app + middleware + route mount
+│   │
+│   │   ├── config/
+│   │   │   ├── env.js
+│   │   │   ├── db.js                      # knex client wrapper
+│   │   │   ├── logger.js                  # winston config
+│   │   │   ├── s3.js                      # MinIO/AWS S3 helper
+│   │   │   └── tenant.config.js
+│   │
+│   │   ├── api/
+│   │   │   └── v1/
+│   │   │       ├── index.js               # /api/v1 registry
+│   │   │       ├── auth.routes.js
+│   │   │       ├── patients.routes.js
+│   │   │       ├── visits.routes.js
+│   │   │       ├── reports.routes.js
+│   │   │       ├── forms.routes.js        # ADMIN ONLY
+│   │   │       ├── reportTemplates.routes.js # ADMIN ONLY
+│   │   │       ├── users.routes.js
+│   │   │       ├── analytics.routes.js
+│   │   │       └── health.routes.js
+│   │
+│   │   ├── core/
+│   │   │   ├── tenant/
+│   │   │   │   ├── tenant.model.js
+│   │   │   │   ├── tenant.resolver.js
+│   │   │   │   └── tenant.middleware.js
+│   │   │   │
+│   │   │   ├── rbac/
+│   │   │   │   ├── role.model.js
+│   │   │   │   ├── permission.model.js
+│   │   │   │   ├── access.guard.js
+│   │   │   │   └── role.middleware.js
+│   │   │   │
+│   │   │   ├── policies/
+│   │   │   │   ├── patient.policy.js
+│   │   │   │   ├── report.policy.js
+│   │   │   │   └── admin.policy.js
+│   │   │   │
+│   │   │   └── versioning/
+│   │   │       ├── version.model.js
+│   │   │       └── version.service.js
+│   │
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   │   ├── auth.controller.js
+│   │   │   │   ├── auth.service.js
+│   │   │   │   └── auth.middleware.js
+│   │   │   │
+│   │   │   ├── users/
+│   │   │   │   ├── user.model.js
+│   │   │   │   ├── user.service.js
+│   │   │   │   └── user.controller.js
+│   │   │   │
+│   │   │   ├── patients/
+│   │   │   │   ├── patient.model.js
+│   │   │   │   ├── patient.service.js
+│   │   │   │   └── patient.controller.js
+│   │   │   │
+│   │   │   ├── visits/
+│   │   │   │   ├── visit.model.js
+│   │   │   │   ├── visit.service.js
+│   │   │   │   └── visit.controller.js
+│   │   │   │
+│   │   │   ├── reports/
+│   │   │   │   ├── report.model.js
+│   │   │   │   ├── report.service.js
+│   │   │   │   └── report.controller.js
+│   │   │   │
+│   │   │   ├── wards-beds/
+│   │   │   │   ├── ward.model.js
+│   │   │   │   ├── ward.service.js
+│   │   │   │   └── ward.controller.js
+│   │   │   │
+│   │   │   ├── staff/
+│   │   │   │   ├── staff.model.js
+│   │   │   │   ├── staff.service.js
+│   │   │   │   └── staff.controller.js
+│   │   │   │
+│   │   │   ├── billing/
+│   │   │   │   ├── billing.model.js
+│   │   │   │   ├── billing.service.js
+│   │   │   │   └── billing.controller.js
+│   │   │   │
+│   │   │   ├── insurance/
+│   │   │   ├── pharmacy/
+│   │   │   └── master-data/
+│   │
+│   │   ├── lcnc/
+│   │   │   ├── form-engine/
+│   │   │   │   ├── form.model.js
+│   │   │   │   ├── form.service.js
+│   │   │   │   ├── form.controller.js
+│   │   │   │   └── form.validator.js
+│   │   │   │
+│   │   │   ├── rules-engine/
+│   │   │   │   ├── rule.model.js
+│   │   │   │   ├── rule.executor.js
+│   │   │   │   └── rule.simulator.js
+│   │   │   │
+│   │   │   ├── report-engine/
+│   │   │   │   ├── report.generator.js
+│   │   │   │   └── template.renderer.js
+│   │   │   │
+│   │   │   └── workflow-engine/
+│   │   │       ├── workflow.model.js
+│   │   │       └── workflow.executor.js
+│   │
+│   │   ├── realtime/
+│   │   │   ├── socket.js
+│   │   │   ├── patient.events.js
+│   │   │   ├── report.events.js
+│   │   │   └── bed.events.js
+│   │
+│   │   ├── audit/
+│   │   │   ├── audit.model.js
+│   │   │   ├── audit.logger.js
+│   │   │   └── audit.service.js
+│   │
+│   │   ├── analytics/
+│   │   │   ├── analytics.service.js
+│   │   │   └── analytics.controller.js
+│   │
+│   │   ├── validators/
+│   │   │   ├── auth.schema.js
+│   │   │   ├── patient.schema.js
+│   │   │   └── report.schema.js
+│   │
+│   │   ├── middlewares/
+│   │   │   ├── auth.middleware.js
+│   │   │   ├── tenant.middleware.js
+│   │   │   ├── error.middleware.js
+│   │   │   └── requestLogger.middleware.js
+│   │
+│   │   ├── utils/
+│   │   │   ├── jwt.js
+│   │   │   ├── response.js
+│   │   │   ├── constants.js
+│   │   │   └── ruleParser.js
+│   │
+│   │   └── socket.index.js
+│   │
+│   ├── migrations/
+│   │   ├── 0001_create_tenants_and_users.js
+│   │   ├── 0002_create_patients_and_visits.js
+│   │   ├── 0003_create_forms_and_templates.js
+│   │   ├── 0004_create_reports_and_audit.js
+│   │   └── 0005_create_beds_roles_permissions.js
+│   │
+│   ├── seeders/
+│   │   ├── 01_roles_and_admin.js
+│   │   └── 02_sample_master_data.js
+│   │
+│   ├── tests/
+│   │   ├── unit/
+│   │   │   ├── auth.test.js
+│   │   │   ├── patients.test.js
+│   │   │   └── reports.test.js
+│   │   └── integration/
+│   │       ├── patient_e2e.test.js
+│   │       └── report_e2e.test.js
+│   │
+│   └── docs/
+│       ├── api_design.md
+│       └── deployment.md
+│
+├── hms-frontend/
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── vite.config.js
+│   ├── README.md
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   └── images/
+│   │       └── hospital-bg.jpg
+│   │
+│   ├── src/
+│   │   ├── assets/
+│   │   │   ├── icons/
+│   │   │   │   ├── logo.svg
+│   │   │   │   └── user.svg
+│   │   │   └── images/
+│   │   │       └── placeholder.png
+│   │   │
+│   │   ├── core/
+│   │   │   ├── AppShell.jsx
+│   │   │   ├── ErrorBoundary.jsx
+│   │   │   ├── ThemeProvider.jsx
+│   │   │   ├── PermissionGate.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   └── TenantResolver.jsx
+│   │   │
+│   │   ├── components/
+│   │   │   └── common/
+│   │   │       ├── Header.jsx
+│   │   │       ├── Sidebar.jsx
+│   │   │       ├── Footer.jsx
+│   │   │       ├── Modal.jsx
+│   │   │       ├── Loader.jsx
+│   │   │       └── Toast.jsx
+│   │   │
+│   │   ├── lcnc/
+│   │   │   ├── form-engine/
+│   │   │   │   ├── builder/
+│   │   │   │   │   ├── FormBuilder.jsx
+│   │   │   │   │   ├── FieldPalette.jsx
+│   │   │   │   │   ├── FieldProperties.jsx
+│   │   │   │   │   ├── DragCanvas.jsx
+│   │   │   │   │   └── FieldPreview.jsx
+│   │   │   │   ├── runtime/
+│   │   │   │   │   ├── FormRenderer.jsx
+│   │   │   │   │   ├── DynamicField.jsx
+│   │   │   │   │   └── ValidationRunner.js
+│   │   │   │   └── fields/
+│   │   │   │       ├── TextField.jsx
+│   │   │   │       ├── NumberField.jsx
+│   │   │   │       ├── DateField.jsx
+│   │   │   │       ├── DropdownField.jsx
+│   │   │   │       ├── CheckboxField.jsx
+│   │   │   │       ├── FileUpload.jsx
+│   │   │   │       └── CompositeField.jsx
+│   │   │   │
+│   │   │   ├── rules-engine/
+│   │   │   │   ├── RulesBuilder.jsx
+│   │   │   │   ├── RuleCanvas.jsx
+│   │   │   │   ├── ConditionEditor.jsx
+│   │   │   │   ├── ActionEditor.jsx
+│   │   │   │   ├── RulePreview.jsx
+│   │   │   │   ├── RuleSimulator.jsx
+│   │   │   │   └── RuleExecutor.js
+│   │   │   │
+│   │   │   ├── report-engine/
+│   │   │   │   ├── ReportDesigner.jsx
+│   │   │   │   ├── ReportCanvas.jsx
+│   │   │   │   ├── LayoutCanvas.jsx
+│   │   │   │   ├── PlaceholderPicker.jsx
+│   │   │   │   ├── DataSourceBinder.jsx
+│   │   │   │   └── ReportRenderer.jsx
+│   │   │   │
+│   │   │   └── workflow-engine/
+│   │   │       ├── WorkflowDesigner.jsx
+│   │   │       ├── StateMachine.jsx
+│   │   │       └── WorkflowPreview.jsx
+│   │   │
+│   │   ├── dashboards/
+│   │   │   ├── admin/
+│   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   ├── FormBuilderPage.jsx
+│   │   │   │   ├── RulesBuilderPage.jsx
+│   │   │   │   ├── ReportDesignerPage.jsx
+│   │   │   │   ├── MasterData.jsx
+│   │   │   │   ├── WardBedManagement.jsx
+│   │   │   │   ├── StaffManagement.jsx
+│   │   │   │   ├── AuditLogs.jsx
+│   │   │   │   └── Analytics.jsx
+│   │   │   │
+│   │   │   ├── frontdesk/
+│   │   │   │   ├── FrontDeskDashboard.jsx
+│   │   │   │   ├── PatientRegistration.jsx
+│   │   │   │   └── AppointmentScheduling.jsx
+│   │   │   │
+│   │   │   ├── nurse/
+│   │   │   │   ├── NurseDashboard.jsx
+│   │   │   │   ├── AssignedPatients.jsx
+│   │   │   │   ├── VitalsCapture.jsx
+│   │   │   │   └── BedStatus.jsx
+│   │   │   │
+│   │   │   ├── doctor/
+│   │   │   │   ├── DoctorDashboard.jsx
+│   │   │   │   ├── PatientList.jsx
+│   │   │   │   ├── Consultation.jsx
+│   │   │   │   ├── Prescriptions.jsx
+│   │   │   │   └── Discharge.jsx
+│   │   │   │
+│   │   │   └── patient/
+│   │   │       ├── PatientPortal.jsx
+│   │   │       ├── VisitHistory.jsx
+│   │   │       ├── Reports.jsx
+│   │   │       ├── Prescriptions.jsx
+│   │   │       └── Appointments.jsx
+│   │   │
+│   │   ├── realtime/
+│   │   │   ├── socketClient.js
+│   │   │   ├── bedLiveUpdates.js
+│   │   │   └── notificationStream.js
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── Login.jsx
+│   │   │   ├── Unauthorized.jsx
+│   │   │   └── NotFound.jsx
+│   │   │
+│   │   ├── routes/
+│   │   │   └── AppRoutes.jsx
+│   │   │
+│   │   ├── services/
+│   │   │   ├── apiClient.js
+│   │   │   ├── authService.js
+│   │   │   ├── patientService.js
+│   │   │   ├── reportService.js
+│   │   │   ├── formService.js
+│   │   │   ├── auditService.js
+│   │   │   └── analyticsService.js
+│   │   │
+│   │   ├── store/
+│   │   │   ├── authStore.js
+│   │   │   ├── tenantStore.js
+│   │   │   ├── patientStore.js
+│   │   │   ├── formStore.js
+│   │   │   ├── reportStore.js
+│   │   │   └── uiStore.js
+│   │   │
+│   │   ├── styles/
+│   │   │   ├── global.css
+│   │   │   ├── loader.css
+│   │   │   ├── login.css
+│   │   │   ├── dashboard.css
+│   │   │   └── reportDesigner.css
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── constants.js
+│   │   │   ├── roleMapper.js
+│   │   │   ├── permissionCheck.js
+│   │   │   └── helpers.js
+│   │   │
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   │
+│   ├── public/
+│   │   └── robots.txt
+│   │
+│   └── tests/
+│       ├── unit/
+│       │   ├── PatientRegistration.test.jsx
+│       │   └── FormRenderer.test.jsx
+│       └── integration/
+│           └── FrontDeskFlow.test.jsx
+│
+└── docs/
+    ├── final_presentation_slides.pptx
+    └── user_manual.pdf
+=====================================================================================================================================================================================
+                                                                FINAL STRUCTURE OF THE PROJECT
+hms-platform/
+├── .gitignore
+├── .env.example
+├── README.md
+├── LICENSE
+├── docker-compose.yml
+├── .prettierrc
+├── .eslintrc.cjs
+├── security.md
+├── architecture.md
+├── runbook.md
+│
+├── ci/                                  # CI/CD
+│   ├── pipeline.yml
+│   └── deploy.sh
+│
+├── terraform/                           # Infrastructure as Code
+│   ├── main.tf
+│   └── variables.tf
+│
+├── docs/                                # Platform-wide documentation
+│   ├── api_contracts.md
+│   ├── data_model.md
+│   ├── rbac.md
+│   ├── sockets.md
+│   ├── lcnc_spec.md
+│   ├── pdf_template_guidelines.md
+│   ├── demo_script.md
+│   ├── final_presentation_slides.pptx
+│   └── user_manual.pdf
+│
+├── shared/                              # 🔗 SINGLE SOURCE OF TRUTH (Types)
+│   └── types/
+│       ├── auth.types.ts
+│       ├── user.types.ts
+│       ├── patient.types.ts
+│       ├── visit.types.ts
+│       ├── report.types.ts
+│       ├── billing.types.ts
+│       ├── socket.types.ts
+│       └── common.types.ts
+│
+├── hms-backend/                         # 🧠 BACKEND (Node.js + Express + TS)
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.json
+│   ├── knexfile.ts
+│   ├── Dockerfile
+│   ├── .env.example
+│   ├── README.md
+│   │
+│   └── src/
+│       ├── server.ts                   # HTTP + Socket.IO bootstrap
+│       ├── app.ts                      # Express app setup
+│       │
+│       ├── config/
+│       │   ├── env.ts
+│       │   ├── db.ts
+│       │   ├── logger.ts
+│       │   ├── s3.ts
+│       │   └── tenant.config.ts
+│       │
+│       ├── api/                        # Transport layer
+│       │   └── v1/
+│       │       ├── index.ts
+│       │       ├── auth.routes.ts
+│       │       ├── users.routes.ts
+│       │       ├── patients.routes.ts
+│       │       ├── visits.routes.ts
+│       │       ├── reports.routes.ts
+│       │       ├── forms.routes.ts
+│       │       ├── reportTemplates.routes.ts
+│       │       ├── analytics.routes.ts
+│       │       └── health.routes.ts
+│       │
+│       ├── core/                       # System-wide rules
+│       │   ├── tenant/
+│       │   ├── rbac/
+│       │   ├── policies/
+│       │   └── versioning/
+│       │
+│       ├── domains/                    # ⭐ DOMAIN-DRIVEN CORE
+│       │   ├── auth/
+│       │   │   ├── auth.controller.ts
+│       │   │   ├── auth.service.ts
+│       │   │   ├── auth.middleware.ts
+│       │   │   └── auth.types.ts
+│       │   │
+│       │   ├── users/
+│       │   │   ├── user.model.ts
+│       │   │   ├── user.service.ts
+│       │   │   ├── user.controller.ts
+│       │   │   └── user.types.ts
+│       │   │
+│       │   ├── patients/
+│       │   │   ├── patient.model.ts
+│       │   │   ├── patient.service.ts
+│       │   │   ├── patient.controller.ts
+│       │   │   └── patient.types.ts
+│       │   │
+│       │   ├── visits/
+│       │   │   ├── visit.model.ts
+│       │   │   ├── visit.service.ts
+│       │   │   ├── visit.controller.ts
+│       │   │   └── visit.types.ts
+│       │   │
+│       │   ├── reports/
+│       │   │   ├── report.model.ts
+│       │   │   ├── report.service.ts
+│       │   │   ├── report.controller.ts
+│       │   │   └── report.types.ts
+│       │   │
+│       │   ├── wards-beds/
+│       │   ├── staff/
+│       │   ├── billing/
+│       │   ├── insurance/
+│       │   ├── pharmacy/
+│       │   └── master-data/
+│       │
+│       ├── lcnc/                       # Low-Code / No-Code Engine
+│       │   ├── form-engine/
+│       │   ├── rules-engine/
+│       │   ├── report-engine/
+│       │   └── workflow-engine/
+│       │
+│       ├── realtime/
+│       │   ├── socket.ts
+│       │   ├── patient.events.ts
+│       │   ├── report.events.ts
+│       │   └── bed.events.ts
+│       │
+│       ├── audit/
+│       ├── analytics/
+│       ├── validators/
+│       ├── middlewares/
+│       ├── utils/
+│       ├── types/
+│       ├── migrations/
+│       ├── seeders/
+│       └── tests/
+│
+├── hms-frontend/                        # 🎨 FRONTEND (React + Vite + TS)
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   ├── README.md
+│   │
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   ├── images/
+│   │   └── robots.txt
+│   │
+│   └── src/
+│       ├── app/                        # App bootstrap
+│       │   ├── App.tsx
+│       │   ├── main.tsx
+│       │   └── AppProviders.tsx
+│       │
+│       ├── core/                       # Cross-domain system logic
+│       │   ├── auth/
+│       │   ├── rbac/
+│       │   ├── tenant/
+│       │   ├── layout/
+│       │   └── error/
+│       │
+│       ├── api/                        # API adapters (↔ backend)
+│       │   └── v1/
+│       │       ├── auth.api.ts
+│       │       ├── users.api.ts
+│       │       ├── patients.api.ts
+│       │       ├── visits.api.ts
+│       │       ├── reports.api.ts
+│       │       ├── forms.api.ts
+│       │       ├── audit.api.ts
+│       │       ├── analytics.api.ts
+│       │       └── health.api.ts
+│       │
+│       ├── domains/                    # ⭐ DOMAIN-DRIVEN UI
+│       │   ├── auth/
+│       │   │   ├── LoginPage.tsx
+│       │   │   ├── auth.store.ts
+│       │   │   └── auth.types.ts
+│       │   │
+│       │   ├── patients/
+│       │   │   ├── PatientList.tsx
+│       │   │   ├── PatientDetails.tsx
+│       │   │   ├── patient.store.ts
+│       │   │   └── patient.types.ts
+│       │   │
+│       │   ├── visits/
+│       │   ├── reports/
+│       │   ├── wards-beds/
+│       │   ├── staff/
+│       │   ├── billing/
+│       │   ├── audit/
+│       │   └── analytics/
+│       │
+│       ├── lcnc/                       # LCNC UI
+│       │   ├── form-engine/
+│       │   ├── rules-engine/
+│       │   ├── report-engine/
+│       │   └── workflow-engine/
+│       │
+│       ├── realtime/
+│       │   ├── socketClient.ts
+│       │   ├── patient.events.ts
+│       │   ├── report.events.ts
+│       │   └── bed.events.ts
+│       │
+│       ├── routes/
+│       │   └── AppRoutes.tsx
+│       │
+│       ├── shared/
+│       │   ├── components/
+│       │   ├── hooks/
+│       │   └── utils/
+│       │
+│       ├── styles/
+│       │   ├── global.css
+│       │   └── dashboard.css
+│       │
+│       ├── types/                      # Frontend-only helpers
+│       ├── tests/
+│       ├── App.tsx
+│       ├── main.tsx
+│       └── index.css
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+======================================================================================================================================================================================
+                                                        FINAL PROJECT == CUP MUKIYAM BIGILA..
+
+hms-platform/
+├── .gitignore
+├── .env.example
+├── README.md
+├── LICENSE
+├── docker-compose.yml
+├── .prettierrc
+├── .eslintrc.cjs
+├── security.md
+├── architecture.md
+├── runbook.md
+
+├── ci/
+│   ├── pipeline.yml
+│   └── deploy.sh
+
+├── terraform/
+│   ├── main.tf
+│   └── variables.tf
+
+├── docs/
+│   ├── api_contracts.md
+│   ├── data_model.md
+│   ├── rbac.md
+│   ├── sockets.md
+│   ├── lcnc_spec.md
+│   ├── pdf_template_guidelines.md
+│   ├── demo_script.md
+│   ├── final_presentation_slides.pptx
+│   └── user_manual.pdf
+
+├── shared/
+│   └── types/
+│       ├── auth.types.ts
+│       ├── user.types.ts
+│       ├── patient.types.ts
+│       ├── visit.types.ts
+│       ├── report.types.ts
+│       ├── billing.types.ts
+│       ├── socket.types.ts
+│       └── common.types.ts
+
+├── hms-backend/
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.json
+│   ├── knexfile.ts
+│   ├── Dockerfile
+│   ├── .env.example
+│   ├── README.md
+│   └── src/
+│       ├── server.ts
+│       ├── app.ts
+│
+│       ├── config/
+│       │   ├── env.ts
+│       │   ├── db.ts
+│       │   ├── logger.ts
+│       │   ├── s3.ts
+│       │   └── tenant.config.ts
+│
+│       ├── api/
+│       │   └── v1/
+│       │       ├── index.ts
+│       │       ├── auth.routes.ts
+│       │       ├── users.routes.ts
+│       │       ├── patients.routes.ts
+│       │       ├── visits.routes.ts
+│       │       ├── reports.routes.ts
+│       │       ├── forms.routes.ts
+│       │       ├── reportTemplates.routes.ts
+│       │       ├── analytics.routes.ts
+│       │       └── health.routes.ts
+│
+│       ├── core/
+│       │   ├── tenant/
+│       │   │   ├── tenant.model.ts
+│       │   │   ├── tenant.resolver.ts
+│       │   │   └── tenant.middleware.ts
+│       │   ├── rbac/
+│       │   │   ├── role.model.ts
+│       │   │   ├── permission.model.ts
+│       │   │   ├── access.guard.ts
+│       │   │   └── role.middleware.ts
+│       │   ├── policies/
+│       │   │   ├── patient.policy.ts
+│       │   │   ├── report.policy.ts
+│       │   │   └── admin.policy.ts
+│       │   └── versioning/
+│       │       ├── version.model.ts
+│       │       └── version.service.ts
+│
+│       ├── domains/
+│       │   ├── auth/
+│       │   ├── users/
+│       │   ├── patients/
+│       │   ├── visits/
+│       │   ├── reports/
+│       │   ├── wards-beds/
+│       │   ├── staff/
+│       │   ├── billing/
+│       │   ├── insurance/
+│       │   ├── pharmacy/
+│       │   └── master-data/
+│
+│       ├── lcnc/
+│       │   ├── form-engine/
+│       │   ├── rules-engine/
+│       │   ├── report-engine/
+│       │   └── workflow-engine/
+│
+│       ├── realtime/
+│       │   ├── socket.ts
+│       │   ├── patient.events.ts
+│       │   ├── report.events.ts
+│       │   └── bed.events.ts
+│
+│       ├── audit/
+│       ├── analytics/
+│       ├── validators/
+│       ├── middlewares/
+│       ├── utils/
+│       ├── types/
+│       ├── migrations/
+│       ├── seeders/
+│       └── tests/
+
+├── hms-frontend/
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   ├── README.md
+│
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   ├── images/
+│   │   └── robots.txt
+│
+│   └── src/
+│       ├── app/
+│       │   ├── App.tsx
+│       │   ├── main.tsx
+│       │   └── AppProviders.tsx
+│
+│       ├── core/
+│       │   ├── auth/
+│       │   ├── rbac/
+│       │   ├── tenant/
+│       │   ├── layout/
+│       │   └── error/
+│
+│       ├── api/
+│       │   └── v1/
+│       │       ├── auth.api.ts
+│       │       ├── users.api.ts
+│       │       ├── patients.api.ts
+│       │       ├── visits.api.ts
+│       │       ├── reports.api.ts
+│       │       ├── forms.api.ts
+│       │       ├── audit.api.ts
+│       │       ├── analytics.api.ts
+│       │       └── health.api.ts
+│
+│       ├── domains/
+│       │   ├── auth/
+│       │   ├── patients/
+│       │   ├── visits/
+│       │   ├── reports/
+│       │   ├── wards-beds/
+│       │   ├── staff/
+│       │   ├── billing/
+│       │   ├── audit/
+│       │   └── analytics/
+│
+│       ├── lcnc/
+│       │   ├── form-engine/
+│       │   ├── rules-engine/
+│       │   ├── report-engine/
+│       │   └── workflow-engine/
+│
+│       ├── realtime/
+│       │   ├── socketClient.ts
+│       │   ├── patient.events.ts
+│       │   ├── report.events.ts
+│       │   └── bed.events.ts
+│
+│       ├── routes/
+│       │   └── AppRoutes.tsx
+│
+│       ├── shared/
+│       │   ├── components/
+│       │   ├── hooks/
+│       │   └── utils/
+│
+│       ├── styles/
+│       │   ├── global.css
+│       │   └── dashboard.css
+│
+│       ├── types/
+│       ├── tests/
+│       └── index.css
+

@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: hms-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hms
+      POSTGRES_USER: hms_user
+      POSTGRES_PASSWORD: change_me_securely
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
