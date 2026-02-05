@@ -1,0 +1,4 @@
+# hms-frontend/public/robots.txt
+
+User-agent: *
+Disallow:

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- ================= Basic Meta ================= -->
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ================= SEO ================= -->
+    <title>Hospital Management System</title>
+    <meta
+      name="description"
+      content="A secure, scalable, multi-tenant Hospital Management System"
+    />
+    <meta name="theme-color" content="#0f172a" />
+
+    <!-- ================= Favicon ================= -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <!-- ================= Base Styles ================= -->
+    <style>
+      html,
+      body,
+      #root {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue",
+          Arial, sans-serif;
+        background-color: #f8fafc;
+        color: #0f172a;
+      }
+
+      /* Prevent layout shift before React loads */
+      #root {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ================= React Mount Point ================= -->
+    <div id="root"></div>
+
+    <!-- ================= App Entry ================= -->
+    <!-- Vite will inject the correct bundle in dev & prod -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
