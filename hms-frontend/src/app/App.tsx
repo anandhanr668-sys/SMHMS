@@ -1,10 +1,13 @@
 // hms-frontend/src/app/App.tsx
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import { AppProviders } from "./AppProviders";
 import { AppLayout } from "../core/layout";
 import { NotFound } from "../core/error";
+
+import { LoginPage } from "@/domains/auth";
+import { PatientsPage } from "@/domains/patients";
 
 /* -------------------- Pages -------------------- */
 const HomePage = () => {
@@ -16,7 +19,10 @@ export const App = () => {
   return (
     <AppProviders>
       <Routes>
-        {/* Root Dashboard */}
+        {/* Public routes */}
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Dashboard routes */}
         <Route
           path="/"
           element={
@@ -26,10 +32,16 @@ export const App = () => {
           }
         />
 
-        {/* Auth routes (placeholder) */}
-        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route
+          path="/patients"
+          element={
+            <AppLayout>
+              <PatientsPage />
+            </AppLayout>
+          }
+        />
 
-        {/* 404 - Catch all */}
+        {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppProviders>
