@@ -1,21 +1,36 @@
-// src/api/v1/patients.routes.ts
-
 import { Router, Request, Response } from "express";
 import { requirePermission } from "../../core/rbac/role.middleware";
+
 const router = Router();
 
-router.get("/", (_req: Request, res: Response) => {
-  res.json({
-    success: true,
-    data: []
-  });
-});
+/**
+ * GET /api/v1/patients
+ * List patients (RBAC protected: read patient)
+ */
+router.get(
+  "/",
+  requirePermission({ action: "read", resource: "patient" }),
+  (_req: Request, res: Response) => {
+    res.json({
+      success: true,
+      data: []
+    });
+  }
+);
 
-router.post("/", (_req: Request, res: Response) => {
-  res.status(201).json({
-    success: true,
-    message: "Patient created (placeholder)"
-  });
-});
+/**
+ * POST /api/v1/patients
+ * Create patient (RBAC protected: create patient)
+ */
+router.post(
+  "/",
+  requirePermission({ action: "create", resource: "patient" }),
+  (_req: Request, res: Response) => {
+    res.status(201).json({
+      success: true,
+      message: "Patient created successfully"
+    });
+  }
+);
 
 export default router;
