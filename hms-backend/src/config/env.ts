@@ -1,44 +1,90 @@
-// src/config/env.ts
-
 import dotenv from "dotenv";
 
+/**
+ * Load environment variables
+ * (only once, at app startup)
+ */
 dotenv.config();
 
 /**
- * Helper to safely read env variables
+ * Helper to read required env vars
  */
-const getEnv = (key: string, required = true): string => {
+function requireEnv(key: string): string {
   const value = process.env[key];
-  if (!value && required) {
+  if (!value) {
     throw new Error(`❌ Missing required environment variable: ${key}`);
   }
-  return value || "";
-};
+  return value;
+}
 
+/**
+ * Helper to read optional env vars with default
+ */
+function optionalEnv(key: string, defaultValue: string): string {
+  return process.env[key] ?? defaultValue;
+}
+
+/**
+ * Application Environment
+ */
 export const env = {
-  nodeEnv: getEnv("NODE_ENV", false) || "development",
+  /* ======================================================
+   * APP
+   * ====================================================== */
+  nodeEnv: optionalEnv("NODE_ENV", "development"),
+  port: Number(optionalEnv("BACKEND_PORT", "4000")),
 
-  backendPort: Number(getEnv("BACKEND_PORT", false)) || 4000,
-  socketPort: Number(getEnv("SOCKET_PORT", false)) || 4001,
+  /* ======================================================
+   * SECURITY / AUTH
+   * ====================================================== */
+  jwtSecret: requireEnv("JWT_SECRET"),
+  jwtExpiresIn: optionalEnv("JWT_EXPIRES_IN", "1d"),
 
-  jwt: {
-    secret: getEnv("JWT_SECRET"),
-    expiresIn: getEnv("JWT_EXPIRES_IN", false) || "1d"
-  },
-
+  /* ======================================================
+   * DATABASE (PostgreSQL)
+   * ====================================================== */
   db: {
-    host: getEnv("POSTGRES_HOST"),
-    port: Number(getEnv("POSTGRES_PORT")),
-    user: getEnv("POSTGRES_USER"),
-    password: getEnv("POSTGRES_PASSWORD"),
-    database: getEnv("POSTGRES_DB")
+    host: requireEnv("DB_HOST"),
+    port: Number(optionalEnv("DB_PORT", "5432")),
+    name: requireEnv("DB_NAME"),
+    user: requireEnv("DB_USER"),
+    password: requireEnv("DB_PASSWORD"),
+    ssl: optionalEnv("DB_SSL", "false") === "true",
   },
 
+  /* ======================================================
+   * MULTI-TENANCY
+   * ====================================================== */
+  tenant: {
+    headerName: optionalEnv("TENANT_HEADER", "x-tenant-id"),
+    defaultTenant: optionalEnv("DEFAULT_TENANT_ID", ""),
+  },
+
+  /* ======================================================
+   * STORAGE (S3 / MinIO – optional for now)
+   * ====================================================== */
   s3: {
-    enabled: Boolean(process.env.AWS_S3_BUCKET),
-    region: process.env.AWS_REGION || "",
-    bucket: process.env.AWS_S3_BUCKET || "",
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ""
-  }
+    enabled: optionalEnv("S3_ENABLED", "false") === "true",
+    endpoint: optionalEnv("S3_ENDPOINT", ""),
+    accessKey: optionalEnv("S3_ACCESS_KEY", ""),
+    secretKey: optionalEnv("S3_SECRET_KEY", ""),
+    bucket: optionalEnv("S3_BUCKET", ""),
+    region: optionalEnv("S3_REGION", "us-east-1"),
+  },
+
+  /* ======================================================
+   * LOGGING
+   * ====================================================== */
+  logging: {
+    level: optionalEnv("LOG_LEVEL", "info"),
+  },
 };
+
+/**
+ * Final safety check (optional but recommended)
+ */
+if (env.nodeEnv === "production") {
+  if (env.jwtSecret.length < 32) {
+    throw new Error("❌ JWT_SECRET must be at least 32 characters in production");
+  }
+}

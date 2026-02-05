@@ -3,7 +3,7 @@
 import http from "http";
 import dotenv from "dotenv";
 import { createApp } from "./app.js";
-
+import { initSocket } from "./realtime/socket.js";
 dotenv.config();
 
 const PORT = Number(process.env.BACKEND_PORT) || 4000;
@@ -13,6 +13,8 @@ const app = createApp();
 
 /* -------------------- Create Server -------------------- */
 const server = http.createServer(app);
+// Initialize Socket.IO
+initSocket(server);
 
 /* -------------------- Start Listening -------------------- */
 server.listen(PORT, () => {

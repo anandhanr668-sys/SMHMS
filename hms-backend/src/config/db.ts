@@ -10,7 +10,7 @@ export const db: Knex = knex({
     port: env.db.port,
     user: env.db.user,
     password: env.db.password,
-    database: env.db.database
+    database: env.db.name
   },
   pool: {
     min: 2,
