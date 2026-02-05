@@ -1,6 +1,6 @@
 // src/seeders/003_seed_admin_user.ts
 
-import { Knex } from "knex";
+import type { Knex } from "knex";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 

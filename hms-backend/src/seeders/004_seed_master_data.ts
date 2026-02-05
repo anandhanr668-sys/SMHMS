@@ -1,6 +1,6 @@
 // src/seeders/004_seed_master_data.ts
 
-import { Knex } from "knex";
+import type { Knex } from "knex";
 import crypto from "crypto";
 
 export async function seed(knex: Knex): Promise<void> {

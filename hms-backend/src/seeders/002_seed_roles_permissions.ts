@@ -1,6 +1,6 @@
 // src/seeders/002_seed_roles_permissions.ts
 
-import { Knex } from "knex";
+import type { Knex } from "knex";
 import crypto from "crypto";
 
 export async function seed(knex: Knex): Promise<void> {

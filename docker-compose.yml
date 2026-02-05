@@ -6,9 +6,9 @@ services:
     container_name: hms-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: hms
-      POSTGRES_USER: hms_user
-      POSTGRES_PASSWORD: change_me_securely
+      POSTGRES_DB: hms_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:

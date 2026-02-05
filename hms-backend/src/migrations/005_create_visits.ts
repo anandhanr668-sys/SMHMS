@@ -1,6 +1,6 @@
 // src/migrations/005_create_visits.ts
 
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("visits", (table) => {

@@ -1,6 +1,6 @@
 // src/migrations/008_create_audit_logs.ts
 
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("audit_logs", (table) => {
