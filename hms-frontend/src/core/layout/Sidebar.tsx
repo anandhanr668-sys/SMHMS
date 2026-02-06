@@ -12,7 +12,12 @@ export const Sidebar = () => {
     { label: "👨‍⚕️ Staff", path: "/staff" },
     { label: "💳 Billing", path: "/billing" },
     { label: "📋 Audit", path: "/audit" },
-    { label: "📈 Analytics", path: "/analytics" }
+    { label: "📈 Analytics", path: "/analytics" },
+    // LCNC tools
+    { label: "🧩 Forms", path: "/lcnc/forms" },
+    { label: "🧠 Rules", path: "/lcnc/rules" },
+    { label: "📑 Reports (LCNC)", path: "/lcnc/reports" },
+    { label: "🔁 Workflows", path: "/lcnc/workflows" }
   ];
 
   return (
