@@ -56,6 +56,25 @@ const { chromium } = require('playwright');
   const dashboardHeading = await page.locator('h1').filter({ hasText: 'Dashboard' }).first().textContent().catch(() => null);
   console.log('Dashboard heading:', dashboardHeading);
 
+  // 4) Visit LCNC pages
+  const lcncPages = [
+    { path: '/lcnc/forms', label: 'Forms' },
+    { path: '/lcnc/rules', label: 'Rules' },
+    { path: '/lcnc/reports', label: 'Reports' },
+    { path: '/lcnc/workflows', label: 'Workflows' }
+  ];
+
+  for (const p of lcncPages) {
+    const lp = `http://localhost:5173${p.path}`;
+    console.log('Navigating to', lp);
+    const r = await page.goto(lp, { waitUntil: 'networkidle' });
+    console.log(`${p.label} status:`, r && r.status());
+    await page.waitForTimeout(500);
+
+    const heading = await page.locator('h1, h2, h3, h4').filter({ hasText: p.label }).first().textContent().catch(() => null);
+    console.log(`${p.label} heading:`, heading ? heading : '(not found)');
+  }
+
   await browser.close();
   process.exit(0);
 })();
