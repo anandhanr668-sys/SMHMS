@@ -56,6 +56,17 @@ const { chromium } = require('playwright');
   const dashboardHeading = await page.locator('h1').filter({ hasText: 'Dashboard' }).first().textContent().catch(() => null);
   console.log('Dashboard heading:', dashboardHeading);
 
+  // 3.1) Visit dashboard alias (/dashboard) to ensure direct navigation works
+  url = 'http://localhost:5173/dashboard';
+  console.log('Navigating to', url);
+  resp = await page.goto(url, { waitUntil: 'networkidle' });
+  console.log('Dashboard (alias) status:', resp && resp.status());
+
+  await page.waitForTimeout(1000);
+
+  const dashboardAliasHeading = await page.locator('h1').filter({ hasText: 'Dashboard' }).first().textContent().catch(() => null);
+  console.log('Dashboard (alias) heading:', dashboardAliasHeading);
+
   // 4) Visit LCNC pages
   const lcncPages = [
     { path: '/lcnc/forms', label: 'Forms' },
