@@ -1,0 +1,70 @@
+/* =========================================
+   HMS FRONTEND — INDEX CSS
+   Entry point styles only
+   ========================================= */
+
+/* Import global design system */
+@import "./styles/global.css";
+@import "./styles/dashboard.css";
+
+/* ---------- ROOT APP CONTAINER ---------- */
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- BASIC UTILITIES ---------- */
+.hidden {
+  display: none !important;
+}
+
+.full-height {
+  height: 100%;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ---------- SAFE ANIMATIONS ---------- */
+.fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------- PRINT SAFETY ---------- */
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .app-sidebar,
+  .app-header {
+    display: none;
+  }
+
+  .app-content {
+    padding: 0;
+  }
+}
