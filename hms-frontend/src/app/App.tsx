@@ -30,6 +30,7 @@ export const App = () => {
         {/* ---------- Protected / Dashboard Routes ---------- */}
         <Route element={<AppLayout />}>
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/patients" element={<PatientsPage />} />
           <Route path="/visits" element={<VisitsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
