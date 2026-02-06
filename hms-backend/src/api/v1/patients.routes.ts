@@ -1,17 +1,21 @@
 import { Router, Request, Response } from "express";
+import { authMiddleware } from "../../middlewares/auth.middleware";
 import { requirePermission } from "../../core/rbac/role.middleware";
 
 const router = Router();
 
 /**
+ * ======================================================
  * GET /api/v1/patients
- * List patients (RBAC protected: read patient)
+ * Auth + RBAC protected
+ * ======================================================
  */
 router.get(
   "/",
+  authMiddleware,
   requirePermission({ action: "read", resource: "patient" }),
   (_req: Request, res: Response) => {
-    res.json({
+    res.status(200).json({
       success: true,
       data: []
     });
@@ -19,11 +23,14 @@ router.get(
 );
 
 /**
+ * ======================================================
  * POST /api/v1/patients
- * Create patient (RBAC protected: create patient)
+ * Auth + RBAC protected
+ * ======================================================
  */
 router.post(
   "/",
+  authMiddleware,
   requirePermission({ action: "create", resource: "patient" }),
   (_req: Request, res: Response) => {
     res.status(201).json({

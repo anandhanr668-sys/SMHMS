@@ -17,12 +17,9 @@ import { BillingPage } from "@/domains/billing";
 import { AuditPage } from "@/domains/audit";
 import { AnalyticsPage } from "@/domains/analytics";
 
-/* -------------------- Home -------------------- */
-const HomePage = () => {
-  return <div>Welcome to HMS Dashboard</div>;
-};
+/* -------------------- Dashboard -------------------- */
+import { DashboardPage } from "@/domains/dashboard";
 
-/* -------------------- App -------------------- */
 export const App = () => {
   return (
     <AppProviders>
@@ -31,8 +28,8 @@ export const App = () => {
         <Route path="/login" element={<LoginPage />} />
 
         {/* ---------- Protected / Dashboard Routes ---------- */}
-        <Route element={<AppLayout children={undefined} />}>
-          <Route path="/" element={<HomePage />} />
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<DashboardPage />} />
           <Route path="/patients" element={<PatientsPage />} />
           <Route path="/visits" element={<VisitsPage />} />
           <Route path="/reports" element={<ReportsPage />} />

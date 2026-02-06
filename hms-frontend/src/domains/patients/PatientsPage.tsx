@@ -17,26 +17,27 @@ export const PatientsPage = () => {
         style={{
           width: "100%",
           borderCollapse: "collapse",
-          backgroundColor: "#ffffff"
+          backgroundColor: "#ffffff",
+          border: "1px solid #e2e8f0"
         }}
       >
         <thead>
-          <tr>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>
+          <tr style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+            <th style={{ textAlign: "left", padding: "0.75rem", fontWeight: 600 }}>
               Name
             </th>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>
+            <th style={{ textAlign: "left", padding: "0.75rem", fontWeight: 600 }}>
               Gender
             </th>
           </tr>
         </thead>
         <tbody>
           {patients.map((p) => (
-            <tr key={p.id}>
-              <td style={{ padding: "0.5rem" }}>
+            <tr key={p.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
+              <td style={{ padding: "0.75rem" }}>
                 {p.firstName} {p.lastName}
               </td>
-              <td style={{ padding: "0.5rem" }}>{p.gender}</td>
+              <td style={{ padding: "0.75rem" }}>{p.gender}</td>
             </tr>
           ))}
         </tbody>

@@ -1,27 +1,20 @@
-// hms-frontend/src/main.tsx
-
 import React from "react";
 import ReactDOM from "react-dom/client";
-
+import { BrowserRouter } from "react-router-dom";
 import { App } from "./app/App";
-import { ErrorBoundary } from "./core/error";
+import { ErrorBoundary } from "./core/error/ErrorBoundary";
+import "./index.css";
 
-import "@/styles/global.css";
-import "@/styles/dashboard.css";
+const root = document.getElementById("root");
 
-import "@/index.css";
+if (!root) throw new Error("Root element not found");
 
-
-const rootElement = document.getElementById("root");
-
-if (!rootElement) {
-  throw new Error("Root element #root not found");
-}
-
-ReactDOM.createRoot(rootElement).render(
+ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </ErrorBoundary>
   </React.StrictMode>
 );

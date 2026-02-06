@@ -3,7 +3,7 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
 
-import apiV1Routes from "./api/v1";
+import apiV1Routes from "./api/v1/index.js";
 import { tenantMiddleware } from "./core/tenant/tenant.middleware";
 import { requestIdMiddleware, errorMiddleware } from "./middlewares";
 

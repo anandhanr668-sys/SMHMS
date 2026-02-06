@@ -1,6 +1,6 @@
 // src/core/tenant/tenant.context.tsx
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Tenant } from "./tenant.types";
 
 interface TenantContextValue {
@@ -23,12 +23,20 @@ export const TenantProvider = ({
     name: "Demo General Hospital"
   });
 
+  // Sync tenant to localStorage
+  useEffect(() => {
+    if (tenant) {
+      localStorage.setItem("tenantId", tenant.id);
+    }
+  }, [tenant]);
+
   const setTenant = (tenant: Tenant) => {
     setTenantState(tenant);
   };
 
   const clearTenant = () => {
     setTenantState(null);
+    localStorage.removeItem("tenantId");
   };
 
   return (

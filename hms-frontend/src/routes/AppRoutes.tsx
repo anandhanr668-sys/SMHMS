@@ -26,16 +26,16 @@ import { ReportPreview } from "@/lcnc/report-engine";
 import { WorkflowPreview } from "@/lcnc/workflow-engine";
 
 /* -------------------------------------------------------
-   🔐 PROTECTED ROUTE WRAPPER
+   🔐 PROTECTED LAYOUT WRAPPER
 ------------------------------------------------------- */
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedLayout = () => {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <AppLayout />;
 };
 
 /* -------------------------------------------------------
@@ -54,150 +54,24 @@ export const AppRoutes = () => {
       {/* ---------- PUBLIC ---------- */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* ---------- PROTECTED ---------- */}
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <DashboardHome />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+      {/* ---------- PROTECTED (USING LAYOUT) ---------- */}
+      <Route element={<ProtectedLayout />}>
+        <Route path="/" element={<DashboardHome />} />
+        <Route path="/patients" element={<PatientsPage />} />
+        <Route path="/visits" element={<VisitsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/wards-beds" element={<WardsBedsPage />} />
+        <Route path="/staff" element={<StaffPage />} />
+        <Route path="/billing" element={<BillingPage />} />
+        <Route path="/audit" element={<AuditPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
 
-      <Route
-        path="/patients"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <PatientsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/visits"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <VisitsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/reports"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <ReportsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/wards-beds"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <WardsBedsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/staff"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <StaffPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/billing"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <BillingPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/audit"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <AuditPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/analytics"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <AnalyticsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      {/* ---------- LCNC PREVIEWS ---------- */}
-      <Route
-        path="/lcnc/forms"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <FormBuilderPreview />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/lcnc/rules"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <RulesPreview />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/lcnc/reports"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <ReportPreview />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/lcnc/workflows"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <WorkflowPreview />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        {/* ---------- LCNC PREVIEWS ---------- */}
+        <Route path="/lcnc/forms" element={<FormBuilderPreview />} />
+        <Route path="/lcnc/rules" element={<RulesPreview />} />
+        <Route path="/lcnc/reports" element={<ReportPreview />} />
+        <Route path="/lcnc/workflows" element={<WorkflowPreview />} />
+      </Route>
 
       {/* ---------- ERRORS ---------- */}
       <Route path="/unauthorized" element={<Unauthorized />} />

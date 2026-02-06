@@ -1,5 +1,5 @@
 /* ================================
-   HMS DASHBOARD STYLES
+   HMS DASHBOARD STYLES (FINAL)
    ================================ */
 
 /* ---------- LAYOUT ---------- */
@@ -17,37 +17,59 @@
   align-items: center;
   padding: 0 var(--space-lg);
   font-weight: 600;
+  flex-shrink: 0;
+  z-index: 100;
 }
 
 .app-body {
   display: flex;
   flex: 1;
   overflow: hidden;
+  width: 100%;
 }
 
 /* ---------- SIDEBAR ---------- */
 .app-sidebar {
   width: 220px;
   background-color: #020617;
-  color: #e5e7eb;
-  padding: var(--space-md);
+  color: #cbd5e1;
+  padding: 1rem;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid #1e293b;
+}
+
+.app-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .app-sidebar nav a {
   display: block;
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-sm);
-  color: #e5e7eb;
-  margin-bottom: var(--space-xs);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  color: #cbd5e1;
+  margin: 0;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
 }
 
 .app-sidebar nav a:hover {
   background-color: #1e293b;
+  color: #e2e8f0;
 }
 
 .app-sidebar nav a.active {
   background-color: #2563eb;
   color: #ffffff;
+  font-weight: 600;
 }
 
 /* ---------- MAIN CONTENT ---------- */
@@ -56,6 +78,7 @@
   padding: var(--space-lg);
   background-color: var(--color-bg);
   overflow-y: auto;
+  width: 100%;
 }
 
 /* ---------- DASHBOARD CARDS ---------- */
