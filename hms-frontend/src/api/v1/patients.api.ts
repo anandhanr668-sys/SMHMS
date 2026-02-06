@@ -11,7 +11,9 @@ export interface Patient {
 
 export const patientsApi = {
   getAll: async (): Promise<Patient[]> => {
-    const { data } = await http.get<Patient[]>("/patients");
+    const { data } = await http.get<any>("/patients");
+    // Support both direct array and { success: true, data: [...] } shapes
+    if (data && data.data) return data.data;
     return data;
   },
 

@@ -10,7 +10,8 @@ export interface Report {
 
 export const reportsApi = {
   getAll: async (): Promise<Report[]> => {
-    const { data } = await http.get<Report[]>("/reports");
+    const { data } = await http.get<any>("/reports");
+    if (data && data.data) return data.data;
     return data;
   }
 };

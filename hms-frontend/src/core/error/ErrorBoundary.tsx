@@ -4,6 +4,7 @@ import React, { ReactNode } from "react";
 
 interface ErrorBoundaryState {
   hasError: boolean;
+  error?: string | null;
 }
 
 export class ErrorBoundary extends React.Component<
@@ -12,15 +13,17 @@ export class ErrorBoundary extends React.Component<
 > {
   constructor(props: { children: ReactNode }) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(): ErrorBoundaryState {
-    return { hasError: true };
+    return { hasError: true, error: null };
   }
 
   componentDidCatch(error: Error) {
+    // Save error message to state so we can display stack in UI for debugging
     console.error("💥 UI Crash:", error);
+    this.setState({ error: (error && error.stack) || error.message || String(error) });
   }
 
   render() {
@@ -35,7 +38,8 @@ export class ErrorBoundary extends React.Component<
             backgroundColor: "#f8fafc",
             color: "#0f172a",
             flexDirection: "column",
-            textAlign: "center"
+            textAlign: "center",
+            padding: "2rem"
           }}
         >
           <h1 style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>
@@ -44,6 +48,24 @@ export class ErrorBoundary extends React.Component<
           <p style={{ opacity: 0.8 }}>
             Please refresh the page or contact support.
           </p>
+
+          {this.state.error && (
+            <pre
+              style={{
+                marginTop: "1rem",
+                background: "#fff",
+                padding: "1rem",
+                borderRadius: "8px",
+                maxWidth: "900px",
+                width: "100%",
+                overflow: "auto",
+                textAlign: "left",
+                color: "#111"
+              }}
+            >
+              {this.state.error}
+            </pre>
+          )}
         </div>
       );
     }

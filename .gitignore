@@ -21,3 +21,7 @@ Thumbs.db
 
 # Docker
 docker-data/
+
+# Local temp files (dev only)
+# Ignore the temporary token file created during local debugging
+hms-frontend/tmp_token.txt

@@ -28,14 +28,17 @@ export const createApp = (): Application => {
   // 🔑 Request ID (must be early for tracing)
   app.use(requestIdMiddleware);
 
-  // 🏥 Tenant resolution (before routes)
-  app.use(tenantMiddleware);
+  /* ======================================================
+   * Tenant resolution (apply only to api routes)
+   * ====================================================== */
+
+  // Apply tenant middleware only for API routes so /health remains public
+  app.use("/api/v1", tenantMiddleware, apiV1Routes);
 
   /* ======================================================
    * Routes
    * ====================================================== */
 
-  app.use("/api/v1", apiV1Routes);
 
   /* ======================================================
    * Health Check (no tenant / auth dependency)

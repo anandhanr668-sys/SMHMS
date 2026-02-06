@@ -11,7 +11,8 @@ export interface Visit {
 
 export const visitsApi = {
   getAll: async (): Promise<Visit[]> => {
-    const { data } = await http.get<Visit[]>("/visits");
+    const { data } = await http.get<any>("/visits");
+    if (data && data.data) return data.data;
     return data;
   }
 };
