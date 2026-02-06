@@ -2,6 +2,7 @@
 
 import { render, screen } from "@testing-library/react";
 import { Button, Card } from "@/shared/components";
+import { describe, it, expect } from "vitest";
 
 describe("Shared Components", () => {
   it("renders button text", () => {

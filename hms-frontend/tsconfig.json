@@ -23,11 +23,18 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
+    /* ---------- Testing ---------- */
+    "types": ["vitest/globals"],
+
     /* ---------- Path Aliases ---------- */
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["src"]
+
+  "include": [
+    "src",
+    "vite.config.ts"
+  ]
 }

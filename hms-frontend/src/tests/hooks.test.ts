@@ -2,6 +2,7 @@
 
 import { renderHook, act } from "@testing-library/react";
 import { useToggle, usePagination } from "@/shared/hooks";
+import { describe, it, expect } from "vitest";
 
 describe("Shared Hooks", () => {
   it("toggles boolean state", () => {

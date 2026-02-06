@@ -2,6 +2,7 @@
 
 import { evaluateRule } from "@/lcnc/rules-engine/rule.evaluator";
 import { executeWorkflow } from "@/lcnc/workflow-engine/workflow.executor";
+import { describe, it, expect } from "vitest";
 
 describe("LCNC Engines", () => {
   it("evaluates rules correctly", () => {
