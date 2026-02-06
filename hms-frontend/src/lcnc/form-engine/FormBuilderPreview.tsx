@@ -35,7 +35,7 @@ export const FormBuilderPreview = () => {
 
   return (
     <div style={{ backgroundColor: "#ffffff", padding: "1.5rem", borderRadius: "8px" }}>
-      <h3 style={{ marginBottom: "1rem" }}>Forms Engine Preview</h3>
+      <h2 style={{ marginBottom: "1rem" }}>Forms</h2>
       <FormRenderer schema={demoSchema} onSubmit={handleSubmit} />
     </div>
   );

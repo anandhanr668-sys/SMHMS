@@ -55,9 +55,7 @@ export const WorkflowPreview = () => {
         borderRadius: "8px"
       }}
     >
-      <h3 style={{ marginBottom: "1rem" }}>
-        Workflow Engine Preview
-      </h3>
+      <h2 style={{ marginBottom: "1rem" }}>Workflows</h2>
 
       <div style={{ marginBottom: "1rem" }}>
         <label>Severity</label>

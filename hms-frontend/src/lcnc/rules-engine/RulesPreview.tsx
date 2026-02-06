@@ -43,9 +43,7 @@ export const RulesPreview = () => {
         borderRadius: "8px"
       }}
     >
-      <h3 style={{ marginBottom: "1rem" }}>
-        Rules Engine Preview
-      </h3>
+      <h2 style={{ marginBottom: "1rem" }}>Rules</h2>
 
       <div style={{ marginBottom: "1rem" }}>
         <label>Severity</label>

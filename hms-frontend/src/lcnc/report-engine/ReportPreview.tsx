@@ -41,11 +41,14 @@ export const ReportPreview = () => {
   const report = useReportEngine(demoTemplate, demoContext);
 
   return (
-    <ReportRenderer
-      title={report.templateName}
-      version={report.version}
-      sections={report.sections}
-      ruleOutcomes={report.ruleOutcomes}
-    />
+    <div style={{ backgroundColor: "#ffffff", padding: "1.5rem", borderRadius: "8px" }}>
+      <h2 style={{ marginBottom: "1rem" }}>Reports</h2>
+      <ReportRenderer
+        title={report.templateName}
+        version={report.version}
+        sections={report.sections}
+        ruleOutcomes={report.ruleOutcomes}
+      />
+    </div>
   );
 };
