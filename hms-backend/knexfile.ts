@@ -43,6 +43,28 @@ const config: { [key: string]: Knex.Config } = {
       directory: path.resolve(__dirname, "src/seeders"),
     },
   },
+
+  // Explicit test environment so `NODE_ENV=test` or `--env test` targets test DB
+  test: {
+    client: "pg",
+    connection: {
+      host: env("DB_HOST", "localhost"),
+      port: Number(env("DB_PORT", "5432")),
+      user: env("DB_USER", "postgres"),
+      password: env("DB_PASSWORD", "postgres"),
+      // Prefer an explicit test DB name if provided, otherwise default to hms_test_db
+      database: env("DB_NAME", "hms_test_db"),
+    },
+
+    migrations: {
+      directory: path.resolve(__dirname, "src/migrations"),
+      tableName: "knex_migrations",
+    },
+
+    seeds: {
+      directory: path.resolve(__dirname, "src/seeders"),
+    },
+  },
 };
 
 export default config;

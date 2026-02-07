@@ -8,8 +8,10 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "migrate": "knex migrate:latest --knexfile knexfile.ts",
+    "migrate:test": "knex migrate:latest --knexfile knexfile.ts --env test",
     "seed": "knex seed:run --knexfile knexfile.ts",
-    "test": "vitest",
+    "seed:test": "knex seed:run --knexfile knexfile.ts --env test",
+    "test": "npm run migrate:test && npm run seed:test && vitest",
     "test:run": "vitest run",
     "rollback": "knex migrate:rollback --knexfile knexfile.ts"
   },
@@ -23,6 +25,7 @@
     "knex": "^3.1.0",
     "pg": "^8.11.5",
     "socket.io": "^4.7.5",
+    "uuid": "^13.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

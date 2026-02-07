@@ -1,11 +1,15 @@
 // src/tests/setup.ts
 
-import { beforeAll, afterAll } from "vitest";
+// Ensure test environment is set for every test file
+process.env.NODE_ENV = "test";
 
-beforeAll(() => {
+// IMPORTANT:
+// This file is executed ONCE PER TEST FILE.
+// Do NOT run migrations or destroy the DB here.
+
+import { beforeEach } from "vitest";
+
+beforeEach(() => {
+  // Keep environment consistent across tests
   process.env.NODE_ENV = "test";
-});
-
-afterAll(() => {
-  // cleanup hook (future DB, sockets, etc.)
 });

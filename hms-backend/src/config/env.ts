@@ -25,6 +25,17 @@ function optionalEnv(key: string, defaultValue: string): string {
 }
 
 /**
+ * Helper to read either of multiple env keys (legacy support)
+ */
+function oneOfEnv(keys: string[], defaultValue?: string): string {
+  for (const k of keys) {
+    if (process.env[k]) return process.env[k] as string;
+  }
+  if (defaultValue !== undefined) return defaultValue;
+  throw new Error(`❌ Missing required environment variable (one of): ${keys.join("|")}`);
+}
+
+/**
  * Application Environment
  */
 export const env = {
@@ -44,11 +55,12 @@ export const env = {
    * DATABASE (PostgreSQL)
    * ====================================================== */
   db: {
-    host: requireEnv("DB_HOST"),
-    port: Number(optionalEnv("DB_PORT", "5432")),
-    name: requireEnv("DB_NAME"),
-    user: requireEnv("DB_USER"),
-    password: requireEnv("DB_PASSWORD"),
+    // Legacy support: prefer DB_* but accept POSTGRES_* variables too
+    host: oneOfEnv(["DB_HOST", "POSTGRES_HOST"], "localhost"),
+    port: Number(optionalEnv("DB_PORT", optionalEnv("POSTGRES_PORT", "5432"))),
+    name: oneOfEnv(["DB_NAME", "POSTGRES_DB"]),
+    user: oneOfEnv(["DB_USER", "POSTGRES_USER"], "postgres"),
+    password: oneOfEnv(["DB_PASSWORD", "POSTGRES_PASSWORD"], "postgres"),
     ssl: optionalEnv("DB_SSL", "false") === "true",
   },
 

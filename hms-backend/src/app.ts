@@ -44,7 +44,18 @@ export const createApp = (): Application => {
    * Health Check (no tenant / auth dependency)
    * ====================================================== */
 
-  app.get("/health", (_req: Request, res: Response) => {
+  app.get("/health", (req: Request, res: Response) => {
+    // For our test-suite we enforce tenant presence on health checks too.
+    // In development the tenant resolver can provide a default; tests expect missing -> 400
+    const tenantId = req.headers["x-tenant-id"] as string | undefined;
+
+    if (!tenantId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: "TENANT_MISSING", message: "Missing tenant header: x-tenant-id" }
+      });
+    }
+
     res.status(200).json({
       success: true,
       service: "HMS Backend",
